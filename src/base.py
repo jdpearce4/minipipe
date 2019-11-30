@@ -1,5 +1,5 @@
 from multiprocessing import Queue, Process, Event
-from Queue import Empty, Full
+from queue import Empty, Full
 from collections import Counter
 import logging
 from graphviz import Digraph

@@ -8,11 +8,15 @@ setup(name='minipipe',
       description='A machine learning mini-batch pipeline for out-of-memory training',
       long_description=long_description,
       long_description_content_type="text/markdown",
-      url='https://github.com/jdpearce4/minipipe'
+      url='https://github.com/jdpearce4/minipipe',
       author='James D. Pearce',
       author_email='jdp.pearce@gmail.com',
       license='MIT',
-      packages=find_packages(),
+      package_dir  = {'minipipe' : 'src'},
+      packages=['minipipe'],
+      install_requires=[
+          'graphviz',
+      ],
       classifiers = [
 	"Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

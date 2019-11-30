@@ -118,9 +118,7 @@ class Regulator(Pipe):
         # On StopIteration coroutine is reset
 
         corountine = self.functor(**self.init_kwargs)
-        print corountine
         next(corountine)
-        print corountine
         x = None
         while self._continue():
             try:
