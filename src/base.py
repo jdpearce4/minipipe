@@ -6,6 +6,7 @@ from graphviz import Digraph
 from copy import copy
 
 class Sentinel(object):
+
     """
         This class is used to indicate the end of a stream. When a instance of Sentinel is
         passed to a Pipe it will shut itself down.
@@ -14,6 +15,7 @@ class Sentinel(object):
         return 'sentinel'
 
 class Logger(object):
+
     """
         Logger class used by Pipe. There are five levels of logs: INFO, DEBUG, WARNING, ERROR and CRITICAL.
         By default logger is set to INFO.
@@ -154,6 +156,7 @@ class Stream(object):
                 continue
 
 class Pipe(object):
+
     """
         Base class for all pipe segments. Pipes use two sets of Streams: upstreams and downstreams.
         Generally Pipes except data from upstreams and pass downstream after a transformation.
@@ -248,7 +251,8 @@ class Pipe(object):
         return x
 
     def _out(self, x):
-        if self._n_outputs <=1: x = [x]
+        if self._n_outputs <=1:
+            x = [x]
         self._logger.log("out({})".format([repr(x_i) for x_i in x]), self.name, 'debug')
         for x_i, stream in zip(x, self.downstreams):
             stream.put(x_i)

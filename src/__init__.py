@@ -1,3 +1,5 @@
+"""Minipipe is a machine learning mini-batch pipeline tool for out-of-memory workflows. """
+
 from .base import Sentinel
 from .base import Logger
 from .base import Stream
