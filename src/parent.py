@@ -1,6 +1,6 @@
 """ Parent pipe classes """
 
-from minipipe.base import Pipe, Sentinel
+from src.base import Pipe, Sentinel
 
 class Source(Pipe):
 
