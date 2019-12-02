@@ -3,6 +3,17 @@
 from src.base import Pipe, Sentinel
 
 class Source(Pipe):
+    """
+        Source pipes are used to load and/or generate data. Sources have no upstreams, but will have one or more
+        downstreams.
+
+        :param functor: Python generator
+        :param name: String associated with pipe segment
+        :param downstreams: List of Streams that are outputs of functor
+        :param ignore_exceptions: List of exceptions to ignore while pipeline is running
+        :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
+        :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
+    """
 
     def __init__(self, functor, name='Source', downstreams=[],
                  ignore_exceptions=[], init_kwargs={}, stateful=False):
@@ -40,6 +51,18 @@ class Source(Pipe):
 
 
 class Sink(Pipe):
+    """
+            Sink pipes are typically used to save data. Sinks have no downstreams, but will have one or more
+            upstreams.
+
+            :param functor: Python function or class
+            :param name: String associated with pipe segment
+            :param upstreams: List of Streams that are inputs to functor
+            :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
+            :param ignore_exceptions: List of exceptions to ignore while pipeline is running
+            :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
+
+        """
 
     def __init__(self, functor, name='Sink', upstreams=[],
                  ignore_exceptions=[], init_kwargs={}, stateful=False):
@@ -74,6 +97,19 @@ class Sink(Pipe):
 
 
 class Transform(Pipe):
+    """
+            Transform pipes are used to perform arbitrary transformations on data. Transforms will have one or more
+            upstreams and downstreams.
+
+            :param functor: Python function or class
+            :param name: String associated with pipe segment
+            :param upstreams: List of Streams that are inputs to functor
+            :param downstreams: List of Streams that are outputs of functor
+            :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
+            :param ignore_exceptions: List of exceptions to ignore while pipeline is running
+            :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
+
+        """
 
     def __init__(self, functor, name='Transform', upstreams=[], downstreams=[],
                  ignore_exceptions=[], init_kwargs={}, stateful=False):
@@ -105,6 +141,18 @@ class Transform(Pipe):
                     raise e
 
 class Regulator(Pipe):
+    """
+            Regulator pipes are a special type of transformation that changes the data chuck throughput. Regulators can
+            have both upstreams and downstreams. Typically used to batching or accumulating data.
+
+            :param functor: Python coroutines
+            :param name: String associated with pipe segment
+            :param upstreams: List of Streams that are inputs to functor
+            :param downstreams: List of Streams that are outputs of functor
+            :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
+            :param ignore_exceptions: List of exceptions to ignore while pipeline is running
+            :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
+        """
 
     def __init__(self, functor, name='Regulator', upstreams=[], downstreams=[],
                  ignore_exceptions=[], init_kwargs={}, stateful=False):

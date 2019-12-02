@@ -1,10 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='minipipe',
-      version='0.1.1',
+      version='0.1.2',
       description='A machine learning mini-batch pipeline for out-of-memory training',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -18,7 +18,7 @@ setup(name='minipipe',
           'graphviz',
       ],
       classifiers = [
-	"Programming Language :: Python :: 3",
+	    "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
 	],

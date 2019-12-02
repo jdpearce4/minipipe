@@ -1,0 +1,5 @@
+Pipes
+**************
+
+.. automodule:: pipes
+    :members:

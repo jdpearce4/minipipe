@@ -19,6 +19,9 @@ class Logger(object):
     """
         Logger class used by Pipe. There are five levels of logs: INFO, DEBUG, WARNING, ERROR and CRITICAL.
         By default logger is set to INFO.
+
+        :param lvl: log level, one of: info, debug, warning, error or critical
+        :return: None
     """
 
     def __init__(self, lvl='INFO'):
@@ -177,7 +180,9 @@ class Pipe(object):
         :param name: String associated with pipe segment
         :param upstreams: List of Streams that are inputs to functor
         :param downstreams: List of Streams that are outputs of functor
+        :param ignore_exceptions: List of exceptions to ignore while pipeline is running
         :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
+        :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
 
     """
 
@@ -318,7 +323,7 @@ class Pipe(object):
 class PipeSystem(object):
 
     """
-        PipeSystem connects Pipes and creats process pool. Pipes are run and closed with a built PipeSystem.
+        PipeSystem connects Pipes and creates process pool. Pipes are run and closed with a built PipeSystem.
 
         Toy example:
 

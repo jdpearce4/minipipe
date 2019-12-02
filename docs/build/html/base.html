@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Base Classes &mdash; minipipe 0.1 documentation</title>
+  <title>Base Classes &mdash; minipipe 0.1.1 documentation</title>
   
 
   
@@ -36,7 +36,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="MiniPipe: A mini-batch pipeline" href="index.html" /> 
+    <link rel="next" title="Parent Classes" href="pipes.html" />
+    <link rel="prev" title="Introduction to PipeLine" href="examples/toy_example.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,7 +83,9 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Base Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Parent Classes</a></li>
 </ul>
 
             
@@ -178,6 +181,14 @@
 <em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">Logger</code><span class="sig-paren">(</span><em class="sig-param">lvl='INFO'</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logger class used by Pipe. There are five levels of logs: INFO, DEBUG, WARNING, ERROR and CRITICAL.
 By default logger is set to INFO.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>lvl</strong> – log level, one of: info, debug, warning, error or critical</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="base.Logger.log">
 <code class="sig-name descname">log</code><span class="sig-paren">(</span><em class="sig-param">msg</em>, <em class="sig-param">name</em>, <em class="sig-param">lvl='info'</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Logger.log" title="Permalink to this definition">¶</a></dt>
@@ -216,7 +227,9 @@ on the downstreams. This allows the user to create ‘switches’ based on inter
 <li><p><strong>name</strong> – String associated with pipe segment</p></li>
 <li><p><strong>upstreams</strong> – List of Streams that are inputs to functor</p></li>
 <li><p><strong>downstreams</strong> – List of Streams that are outputs of functor</p></li>
+<li><p><strong>ignore_exceptions</strong> – List of exceptions to ignore while pipeline is running</p></li>
 <li><p><strong>init_kwargs</strong> – Kwargs to initiate class object on process (no used when func_type = ‘function’)</p></li>
+<li><p><strong>stateful</strong> – Set to True when using a class functor. Class functors must implement a ‘run’ method</p></li>
 </ul>
 </dd>
 </dl>
@@ -263,7 +276,7 @@ on the downstreams. This allows the user to create ‘switches’ based on inter
 <dl class="class">
 <dt id="base.PipeSystem">
 <em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">PipeSystem</code><span class="sig-paren">(</span><em class="sig-param">pipes=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#base.PipeSystem" title="Permalink to this definition">¶</a></dt>
-<dd><p>PipeSystem connects Pipes and creats process pool. Pipes are run and closed with a built PipeSystem.</p>
+<dd><p>PipeSystem connects Pipes and creates process pool. Pipes are run and closed with a built PipeSystem.</p>
 <p>Toy example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define functors</span>
 <span class="k">def</span> <span class="nf">genRand</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
@@ -338,8 +351,10 @@ passed to a Pipe it will shut itself down.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="pipes.html" class="btn btn-neutral float-right" title="Parent Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="index.html" class="btn btn-neutral float-left" title="MiniPipe: A mini-batch pipeline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="examples/toy_example.html" class="btn btn-neutral float-left" title="Introduction to PipeLine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
