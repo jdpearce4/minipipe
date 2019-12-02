@@ -1,0 +1,694 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Introduction to PipeLine"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The easiest way to understand MiniPipe is to dive into some examples. So let's first look at a simple toy example of a mini-batch pipeline before moving on to real applications. This example is just to demonstrate the basic functionality of MiniPipe. We'll get to some real-world applications later on. \n",
+    "\n",
+    "Most machine learning pipeline will have at least three stages: load, transform and train. In this example we'll simulate these three stages with these simple functions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import time\n",
+    "\n",
+    "# 'loads' data\n",
+    "def loader(n=10):\n",
+    "    for i in range(n):\n",
+    "        time.sleep(0.5)\n",
+    "        yield i\n",
+    "\n",
+    "# performs square transformation to data        \n",
+    "def transform(x):\n",
+    "    time.sleep(1)\n",
+    "    return x**2\n",
+    "\n",
+    "# 'saves' data\n",
+    "def save(x):\n",
+    "    time.sleep(0.5)\n",
+    "    print('x = {}'.format(x))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The first function, `loader`, returns a python generator, which we'll use to generate our \"data\". I've added a delay of 0.5s into the generator to simulate loading time. The next function `transform` is a simple transformation on our data (squares the input), which takes twice as long (1s) as loading. Finally `save` simply prints our data to stdout, also taking 0.5s to simulate saving time."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Of course in this simple example we can fit all the “data” into memory, but lets pretend like that's not the case. We need to load one chuck of data at a time, where each data chuck is returned with the `next(loader())` method. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Serial Pipeline (without MiniPipe)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Lets setup a serial pipeline without MiniPipe, where we get the data, transform it and then save it one batch at a time. We'll use jupyter's %%timeit magic cell to time execution time. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 0\n",
+      "x = 1\n",
+      "x = 4\n",
+      "x = 9\n",
+      "x = 16\n",
+      "x = 25\n",
+      "x = 36\n",
+      "x = 49\n",
+      "x = 64\n",
+      "x = 81\n",
+      "20.1 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%timeit -n 1 -r 1\n",
+    "\n",
+    "# initialize loader\n",
+    "ldr = loader()\n",
+    "\n",
+    "# run pipeline\n",
+    "for data in ldr: \n",
+    "    x = transform(data)\n",
+    "    save(x)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The for loop calls the `next(lrd)` method 10 times sequentially, each time applying `transform` followed by `save`. As expected the execution time takes about 20s since each iteration takes a total of 2s (0.5s + 1s + 0.5s) and it's repeated 10 times."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## MiniPipe: Pipeline Parallel"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now lets see what the same pipeline looks like in MiniPipe."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from minipipe import PipeLine, Source, Transform, Sink\n",
+    "\n",
+    "# initialize pipeline\n",
+    "pline = PipeLine()\n",
+    "\n",
+    "# add pipe segments\n",
+    "pline.add(Source(loader, name='loader')) # loader is not initialized\n",
+    "pline.add(Transform(transform))\n",
+    "pline.add(Sink(save, name='save'))\n",
+    "\n",
+    "# build pipeline\n",
+    "pline.build()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If you've used the Keras Sequential API this will look familiar to you. MiniPipe has three basic types of pipe segments: Sources, Transforms and Sinks. Each has one require argument called a functor. For Sources functors must always be an initialized generator, while for Sinks and Transforms functors can be either a function or a class (with a `run` method). There's also an additional pipe segment called a Regulator which accepts coroutines which we'll discuss later. \n",
+    "\n",
+    "Sources pass data downstream, Sinks accept data from upstream and Transforms do both. In the PipeLine API pipe segments are connected by adding them to an initialized `PipeLine` and then calling the `PipeLine.build` method. \n",
+    "\n",
+    "We can inspect the pipeline graph with the `PipeLine.diagram` method (requires graphviz) to make sure it looks as expected. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/svg+xml": [
+       "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n",
+       "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n",
+       " \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n",
+       "<!-- Generated by graphviz version 2.40.1 (20161225.0304)\n",
+       " -->\n",
+       "<!-- Title: %3 Pages: 1 -->\n",
+       "<svg width=\"107pt\" height=\"188pt\"\n",
+       " viewBox=\"0.00 0.00 106.79 188.00\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",
+       "<g id=\"graph0\" class=\"graph\" transform=\"scale(1 1) rotate(0) translate(4 184)\">\n",
+       "<title>%3</title>\n",
+       "<polygon fill=\"#ffffff\" stroke=\"transparent\" points=\"-4,4 -4,-184 102.7912,-184 102.7912,4 -4,4\"/>\n",
+       "<!-- 4357497128 -->\n",
+       "<g id=\"node1\" class=\"node\">\n",
+       "<title>4357497128</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"49.3956\" cy=\"-162\" rx=\"33.2948\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"49.3956\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">loader</text>\n",
+       "</g>\n",
+       "<!-- 4357546896 -->\n",
+       "<g id=\"node2\" class=\"node\">\n",
+       "<title>4357546896</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"49.3956\" cy=\"-90\" rx=\"49.2915\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"49.3956\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">Transform</text>\n",
+       "</g>\n",
+       "<!-- 4357497128&#45;&gt;4357546896 -->\n",
+       "<g id=\"edge1\" class=\"edge\">\n",
+       "<title>4357497128&#45;&gt;4357546896</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M49.3956,-143.8314C49.3956,-136.131 49.3956,-126.9743 49.3956,-118.4166\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"52.8957,-118.4132 49.3956,-108.4133 45.8957,-118.4133 52.8957,-118.4132\"/>\n",
+       "</g>\n",
+       "<!-- 4357548296 -->\n",
+       "<g id=\"node3\" class=\"node\">\n",
+       "<title>4357548296</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"49.3956\" cy=\"-18\" rx=\"27\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"49.3956\" y=\"-14.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">save</text>\n",
+       "</g>\n",
+       "<!-- 4357546896&#45;&gt;4357548296 -->\n",
+       "<g id=\"edge2\" class=\"edge\">\n",
+       "<title>4357546896&#45;&gt;4357548296</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M49.3956,-71.8314C49.3956,-64.131 49.3956,-54.9743 49.3956,-46.4166\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"52.8957,-46.4132 49.3956,-36.4133 45.8957,-46.4133 52.8957,-46.4132\"/>\n",
+       "</g>\n",
+       "</g>\n",
+       "</svg>\n"
+      ],
+      "text/plain": [
+       "<graphviz.dot.Digraph at 0x103b29438>"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pline.diagram()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Looks good. Now we can run the pipeline; let's again time it like before."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 0\n",
+      "x = 1\n",
+      "x = 4\n",
+      "x = 9\n",
+      "x = 16\n",
+      "x = 25\n",
+      "x = 36\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:27:27,050 - INFO - loader - End of stream\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 49\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:27:28,049 - INFO - loader - Local termination\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 64\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:27:29,043 - INFO - Transform - Local termination\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 81\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:27:29,548 - INFO - save - Local termination\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "11 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%timeit -n 1 -r 1\n",
+    "\n",
+    "pline.run()\n",
+    "pline.close()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We see from the logging (which can be set in the `PipeLine.build` method) where each pipe segment shutdown. When the end of stream was reached the Source shutdown, followed by Transform and Sink. \n",
+    "\n",
+    "The execution time is now 11s instead of 20s. That's because each pipe segments executes on it's own thread/process allowing for parallel execution. Of course dependent nodes still have to wait for data to be passed downstream, but once data is passed the node can start on the next batch without waiting for the full pipeline to be executed. Thus we expect the total time to be 0.5s (initial load) + 10 x (1s) + 0.5s (final save) = 11s. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "By default MiniPipe will place each pipe segment on its own process. Each process is runs independently in a asynchronous fashion. MiniPipe achieves this utilizing Python's Multiprocessing library. \n",
+    "\n",
+    "There is no limit to the number of processes you can run, however you are limited by the number of physical cores on your machine. For computation heavy pipelines bound to the CPU you may see performance degradation if the number of pipe segments exceed the number of physical cores. On the other hand, I/O processes such as loading, or computation that's bound to the GPU such as training, this should be less of an issue. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## MiniPipe: Horizonal Scaling"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Since `Transform` takes twice as long as `Loader` and `Save` we can additionally speed things up by by increasing the number of Transform processes. Minipipe is designed for this type of horizontal parallelization as well."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# initialize pipeline\n",
+    "pline = PipeLine()\n",
+    "\n",
+    "# add pipe segments\n",
+    "pline.add(Source(loader, name='loader')) # loader is not initialized\n",
+    "pline.add(Transform(transform), n_processes=2) # ask for 2 processes\n",
+    "pline.add(Sink(save, name='save'))\n",
+    "\n",
+    "# build pipeline\n",
+    "pline.build()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We setup the pipeline exactly as before, except now when we add Transform to the pipeline we reserve two processes with the `n_processes` argument. \n",
+    "\n",
+    "Now lets look at the pipeline graph."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/svg+xml": [
+       "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n",
+       "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n",
+       " \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n",
+       "<!-- Generated by graphviz version 2.40.1 (20161225.0304)\n",
+       " -->\n",
+       "<!-- Title: %3 Pages: 1 -->\n",
+       "<svg width=\"260pt\" height=\"188pt\"\n",
+       " viewBox=\"0.00 0.00 259.99 188.00\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",
+       "<g id=\"graph0\" class=\"graph\" transform=\"scale(1 1) rotate(0) translate(4 184)\">\n",
+       "<title>%3</title>\n",
+       "<polygon fill=\"#ffffff\" stroke=\"transparent\" points=\"-4,4 -4,-184 255.9896,-184 255.9896,4 -4,4\"/>\n",
+       "<!-- 4357662984 -->\n",
+       "<g id=\"node1\" class=\"node\">\n",
+       "<title>4357662984</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"125.4948\" cy=\"-162\" rx=\"33.2948\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"125.4948\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">loader</text>\n",
+       "</g>\n",
+       "<!-- 4357664328 -->\n",
+       "<g id=\"node2\" class=\"node\">\n",
+       "<title>4357664328</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"58.4948\" cy=\"-90\" rx=\"58.4896\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"58.4948\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">Transform_0</text>\n",
+       "</g>\n",
+       "<!-- 4357662984&#45;&gt;4357664328 -->\n",
+       "<g id=\"edge1\" class=\"edge\">\n",
+       "<title>4357662984&#45;&gt;4357664328</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M110.2915,-145.6621C101.8614,-136.6029 91.2016,-125.1476 81.7468,-114.9873\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"84.1831,-112.4676 74.8085,-107.5312 79.0586,-117.2362 84.1831,-112.4676\"/>\n",
+       "</g>\n",
+       "<!-- 4357664384 -->\n",
+       "<g id=\"node3\" class=\"node\">\n",
+       "<title>4357664384</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"193.4948\" cy=\"-90\" rx=\"58.4896\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"193.4948\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">Transform_1</text>\n",
+       "</g>\n",
+       "<!-- 4357662984&#45;&gt;4357664384 -->\n",
+       "<g id=\"edge2\" class=\"edge\">\n",
+       "<title>4357662984&#45;&gt;4357664384</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M140.9251,-145.6621C149.4809,-136.6029 160.2999,-125.1476 169.8957,-114.9873\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"172.6159,-117.2045 176.9376,-107.5312 167.5268,-112.3981 172.6159,-117.2045\"/>\n",
+       "</g>\n",
+       "<!-- 4357682176 -->\n",
+       "<g id=\"node4\" class=\"node\">\n",
+       "<title>4357682176</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"125.4948\" cy=\"-18\" rx=\"27\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"125.4948\" y=\"-14.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">save</text>\n",
+       "</g>\n",
+       "<!-- 4357664328&#45;&gt;4357682176 -->\n",
+       "<g id=\"edge3\" class=\"edge\">\n",
+       "<title>4357664328&#45;&gt;4357682176</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M74.7136,-72.5708C83.6018,-63.0194 94.7248,-51.0662 104.2934,-40.7836\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"106.9948,-43.0184 111.2448,-33.3134 101.8703,-38.2498 106.9948,-43.0184\"/>\n",
+       "</g>\n",
+       "<!-- 4357664384&#45;&gt;4357682176 -->\n",
+       "<g id=\"edge4\" class=\"edge\">\n",
+       "<title>4357664384&#45;&gt;4357682176</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M177.0339,-72.5708C168.0131,-63.0194 156.724,-51.0662 147.0126,-40.7836\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"149.3683,-38.1804 139.9575,-33.3134 144.2792,-42.9868 149.3683,-38.1804\"/>\n",
+       "</g>\n",
+       "</g>\n",
+       "</svg>\n"
+      ],
+      "text/plain": [
+       "<graphviz.dot.Digraph at 0x103b29390>"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pline.diagram()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We see there are two separate Transform processes, but it's somewhat unclear what happens to the data after Source. To understand what's happening here we have to introduce the concept of a Stream.\n",
+    "\n",
+    "A Stream is a multiprocessing queue that holds the data while processes are busy. Each pipe segment is connected to a Stream. To see the Streams in the graph diagram along with the pipe segments you just need to set the `draw_streams` argument to true. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/svg+xml": [
+       "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n",
+       "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n",
+       " \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n",
+       "<!-- Generated by graphviz version 2.40.1 (20161225.0304)\n",
+       " -->\n",
+       "<!-- Title: %3 Pages: 1 -->\n",
+       "<svg width=\"260pt\" height=\"332pt\"\n",
+       " viewBox=\"0.00 0.00 259.99 332.00\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",
+       "<g id=\"graph0\" class=\"graph\" transform=\"scale(1 1) rotate(0) translate(4 328)\">\n",
+       "<title>%3</title>\n",
+       "<polygon fill=\"#ffffff\" stroke=\"transparent\" points=\"-4,4 -4,-328 255.9896,-328 255.9896,4 -4,4\"/>\n",
+       "<!-- 4357662984 -->\n",
+       "<g id=\"node1\" class=\"node\">\n",
+       "<title>4357662984</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"125.4948\" cy=\"-306\" rx=\"33.2948\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"125.4948\" y=\"-302.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">loader</text>\n",
+       "</g>\n",
+       "<!-- 4357663712 -->\n",
+       "<g id=\"node2\" class=\"node\">\n",
+       "<title>4357663712</title>\n",
+       "<polygon fill=\"none\" stroke=\"#000000\" points=\"159.4948,-252 91.4948,-252 91.4948,-216 159.4948,-216 159.4948,-252\"/>\n",
+       "<text text-anchor=\"middle\" x=\"125.4948\" y=\"-230.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">stream_0</text>\n",
+       "</g>\n",
+       "<!-- 4357662984&#45;&gt;4357663712 -->\n",
+       "<g id=\"edge1\" class=\"edge\">\n",
+       "<title>4357662984&#45;&gt;4357663712</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M125.4948,-287.8314C125.4948,-280.131 125.4948,-270.9743 125.4948,-262.4166\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"128.9949,-262.4132 125.4948,-252.4133 121.9949,-262.4133 128.9949,-262.4132\"/>\n",
+       "</g>\n",
+       "<!-- 4357664328 -->\n",
+       "<g id=\"node3\" class=\"node\">\n",
+       "<title>4357664328</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"58.4948\" cy=\"-162\" rx=\"58.4896\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"58.4948\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">Transform_0</text>\n",
+       "</g>\n",
+       "<!-- 4357663712&#45;&gt;4357664328 -->\n",
+       "<g id=\"edge2\" class=\"edge\">\n",
+       "<title>4357663712&#45;&gt;4357664328</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M108.5879,-215.8314C100.3901,-207.0218 90.4187,-196.3063 81.5373,-186.7621\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"84.0775,-184.3541 74.703,-179.4177 78.953,-189.1227 84.0775,-184.3541\"/>\n",
+       "</g>\n",
+       "<!-- 4357664384 -->\n",
+       "<g id=\"node4\" class=\"node\">\n",
+       "<title>4357664384</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"193.4948\" cy=\"-162\" rx=\"58.4896\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"193.4948\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">Transform_1</text>\n",
+       "</g>\n",
+       "<!-- 4357663712&#45;&gt;4357664384 -->\n",
+       "<g id=\"edge3\" class=\"edge\">\n",
+       "<title>4357663712&#45;&gt;4357664384</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M142.6541,-215.8314C150.9742,-207.0218 161.0944,-196.3063 170.1084,-186.7621\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"172.723,-189.0911 177.0447,-179.4177 167.6339,-184.2847 172.723,-189.0911\"/>\n",
+       "</g>\n",
+       "<!-- 4357681560 -->\n",
+       "<g id=\"node5\" class=\"node\">\n",
+       "<title>4357681560</title>\n",
+       "<polygon fill=\"none\" stroke=\"#000000\" points=\"159.4948,-108 91.4948,-108 91.4948,-72 159.4948,-72 159.4948,-108\"/>\n",
+       "<text text-anchor=\"middle\" x=\"125.4948\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">stream_1</text>\n",
+       "</g>\n",
+       "<!-- 4357664328&#45;&gt;4357681560 -->\n",
+       "<g id=\"edge4\" class=\"edge\">\n",
+       "<title>4357664328&#45;&gt;4357681560</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M74.7136,-144.5708C82.8423,-135.8355 92.8403,-125.0914 101.809,-115.4534\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"104.4756,-117.7256 108.7256,-108.0206 99.3511,-112.957 104.4756,-117.7256\"/>\n",
+       "</g>\n",
+       "<!-- 4357664384&#45;&gt;4357681560 -->\n",
+       "<g id=\"edge6\" class=\"edge\">\n",
+       "<title>4357664384&#45;&gt;4357681560</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M177.0339,-144.5708C168.7839,-135.8355 158.6367,-125.0914 149.5341,-115.4534\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"151.9251,-112.8876 142.5143,-108.0206 146.836,-117.6939 151.9251,-112.8876\"/>\n",
+       "</g>\n",
+       "<!-- 4357682176 -->\n",
+       "<g id=\"node6\" class=\"node\">\n",
+       "<title>4357682176</title>\n",
+       "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"125.4948\" cy=\"-18\" rx=\"27\" ry=\"18\"/>\n",
+       "<text text-anchor=\"middle\" x=\"125.4948\" y=\"-14.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">save</text>\n",
+       "</g>\n",
+       "<!-- 4357681560&#45;&gt;4357682176 -->\n",
+       "<g id=\"edge5\" class=\"edge\">\n",
+       "<title>4357681560&#45;&gt;4357682176</title>\n",
+       "<path fill=\"none\" stroke=\"#000000\" d=\"M125.4948,-71.8314C125.4948,-64.131 125.4948,-54.9743 125.4948,-46.4166\"/>\n",
+       "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"128.9949,-46.4132 125.4948,-36.4133 121.9949,-46.4133 128.9949,-46.4132\"/>\n",
+       "</g>\n",
+       "</g>\n",
+       "</svg>\n"
+      ],
+      "text/plain": [
+       "<graphviz.dot.Digraph at 0x103b290b8>"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pline.diagram(draw_streams=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We see that `loader` puts data on its downstream queue `stream_0` while both `Transform_0` and `Transform_1` get data from that same queue. This allows the two Transform processes to executing asynchronously. The first available Transform process will take the data, so in this graph the order of the data chunks in not necessarily preserved. \n",
+    "\n",
+    "Now lets see how long this pipeline takes."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 0\n",
+      "x = 1\n",
+      "x = 4\n",
+      "x = 9\n",
+      "x = 16\n",
+      "x = 25\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:32:53,628 - INFO - loader - End of stream\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 36\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:32:54,152 - INFO - loader - Local termination\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 49\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:32:54,171 - INFO - Transform_0 - Local termination\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "x = 64\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2019-12-01 17:32:54,667 - INFO - save - Local termination\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "6.07 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%timeit -n 1 -r 1\n",
+    "\n",
+    "pline.run()\n",
+    "pline.close()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We see it takes just over 6s as expected, about 1/3rd of the original execution time. \n",
+    "\n",
+    "At this point the only way to speed things up further is to introduce parallel load processes. This can be done by using two separate Sources each with their own generator function. However this cannot be done with the PipeLine API since it only allows for sequential pipelines. In the next section we'll introduce the PipeSystem API, which allows for general graph structures. "
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

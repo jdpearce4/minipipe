@@ -1,0 +1,82 @@
+A Toy Example
+================
+
+I think the easiest way to understand Minipipe is to dive into some examples. So let's first look at a very simple example of a mini-batch pipeline before moving on to real applications. First we need to define some functions/generators that we'd like to use in our pipeline.
+.. code-block:: python
+
+    from minipipe import Source, Transform, Sink
+    import time
+
+    # 'loads' data
+    def get_generator(n):
+        for i in range(n):
+            time.sleep(0.5)
+            yield i
+
+    # performs transformation to data
+    def square(x):
+        time.sleep(1)
+        return x**2
+
+    # 'saves' data
+    def output(x):
+        time.sleep(0.5)
+        print 'x = {}'.format(x)
+The first function, get_generator, returns a python generator, which we'll use to generate our data. I've added a delay of 0.5s into the generator to simulate loading data from disk. The next function square is a simple transformation on our data, which takes twice as long as loading. Finally output simply prints our data to stdout, also taking 0.5s to simulate saving data to disk.
+
+Of course in this case we can fit all the “data” into memory, but lets pretend like that's not the case. We need to load one chuck of data at a time, where each data chuck is returned with the get_generator().next() method. Lets setup a serial pipeline where we get the data, transform it and then output it one batch at a time:
+.. code-block:: python
+    loader = get_generator(10)
+    for data in loader:
+        x = square(data)
+        output(x)
+The for loop calls the loader.next() method 10 times sequentially, each time applying square followed by output. If you time the execution of this you'll find it takes 20s as expected (10 x (0.5 + 1 + 0.5)).
+
+This is what the same pipeline looks like in Minipipe:
+.. code-block:: python
+    p = Source(loader)()
+    p = Transform(square)(p)
+    p = Sink(output)(p)
+If you've used the Keras Model API this will look familiar to you. Minipipe has three basic types of pipe segments: Sources, Transforms and Sinks. Each has one require argument which is either a generator (for Sources) or a function (Transforms and Sinks). Sources pass data downstream, Sinks accept data from upstream and Transforms do both. The output and input of a pipe segment is always another pipe segment, which allows them to be chained together into DAGs (but not loops). When pipe segments are connected together they form a pipeline. All connected pipe segments share the same pipeline internally.
+
+We can run the pipeline with:
+.. code-block:: python
+    p.run_pipeline()
+    p.close_pipeline()
+If you time the execution of this you'll find it takes 11s instead of 20s. That's because each pipe segments executes on it's own thread/process allowing for parallel execution. Of course dependent nodes still have to wait for data to be passed downstream, but once data is passed the node can start on the next batch without waiting for the full pipeline to be executed. Thus we expect the total time to be 0.5 (initial load) + 10 x (1) + 0.5 (final save) = 11s. The diagrams below illustrate the two pipeline graphs.
+
+Since Transform takes twice as long as Load and Save we can additionally speed things up by by increasing the number of Transform processes. Minipipe is designed for this type of “horizontal” parallelization as well:
+.. code-block:: python
+    p = Source(loader)()
+    p = Transform(square, n_processes=2)(p)
+    p = Sink(output)(p)
+This is what the pipeline graph looks like now:
+image.png
+
+There are two separate Transform processes executing asynchronously. Each has a upstream queue connected to Load's downstream queue so the first available Transform process will take the data. If you time the execution of this pipeline you'll find it takes 6.5s (as expected), about 1/3rd of the original execution time.
+
+At this point the only way to speed things up further is to introduce parallel load processes. This can be done by supplying Source a list of generators:
+.. code-block:: python
+    def get_generator(start, stop, step):
+        for i in range(start, stop, step):
+            time.sleep(0.5)
+            yield i
+
+    g1 = get_generator(0, 10, 2) # generates even numbers
+    g2 = get_generator(1, 10, 2) # generates odd numbers
+
+    p = Source([g1, g2])()
+    p = Transform(square, n_processes=4)(p)
+    p = Sink(output, n_processes=2)(p)
+
+    p.run_pipeline()
+    p.close_pipeline()
+Now we have 9 processes running in total: 2 (Source) + 4 (Transform) + 2 (Sink) + 1 (main). We had to increase the number of processes in Transform and Sink otherwise they would cause a bottleneck. This pipeline now takes about 4.5s (as expected) to execute. Adding more Sources will only increase the throughput if the rest of the pipeline has enough resources to handle the downstream. Remember the throughput is only as fast as the slowest pipe segments: throughput = min(throughput_i).
+
+Lets summarize what we've found.
+Time (s)	Pipeline
+20	Serial pipline
+11	Minipipe pipeline
+6.5	Minipipe + bottleneck (Trans.) parallelization
+4.5	Minipipe + full parallelization (x2) + bottleneck parallelization
+Not bad. We've reduced processing time to less than 1/4th of the original. Theoretically, we can get it down to 2s if we create 10 sources, however that wouldn't be a very realistic example because then we'd have to be able to fit all 10 data chunks into memory, which is what we wanted to avoid in the first place.

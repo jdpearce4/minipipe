@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='minipipe',
-      version='0.1',
+      version='0.1.1',
       description='A machine learning mini-batch pipeline for out-of-memory training',
       long_description=long_description,
       long_description_content_type="text/markdown",

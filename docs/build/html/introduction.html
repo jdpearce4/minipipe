@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>A Toy Example &mdash; minipipe 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> minipipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">A Toy Example</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">minipipe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>A Toy Example</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/introduction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="a-toy-example">
+<h1>A Toy Example<a class="headerlink" href="#a-toy-example" title="Permalink to this headline">¶</a></h1>
+<p>I think the easiest way to understand Minipipe is to dive into some examples. So let’s first look at a very simple example of a mini-batch pipeline before moving on to real applications. First we need to define some functions/generators that we’d like to use in our pipeline.
+.. code-block:: python</p>
+<blockquote>
+<div><p>from minipipe import Source, Transform, Sink
+import time</p>
+<p># ‘loads’ data
+def get_generator(n):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>for i in range(n):</dt><dd><p>time.sleep(0.5)
+yield i</p>
+</dd>
+</dl>
+</div></blockquote>
+<p># performs transformation to data
+def square(x):</p>
+<blockquote>
+<div><p>time.sleep(1)
+return x**2</p>
+</div></blockquote>
+<p># ‘saves’ data
+def output(x):</p>
+<blockquote>
+<div><p>time.sleep(0.5)
+print ‘x = {}’.format(x)</p>
+</div></blockquote>
+</div></blockquote>
+<p>The first function, get_generator, returns a python generator, which we’ll use to generate our data. I’ve added a delay of 0.5s into the generator to simulate loading data from disk. The next function square is a simple transformation on our data, which takes twice as long as loading. Finally output simply prints our data to stdout, also taking 0.5s to simulate saving data to disk.</p>
+<p>Of course in this case we can fit all the “data” into memory, but lets pretend like that’s not the case. We need to load one chuck of data at a time, where each data chuck is returned with the get_generator().next() method. Lets setup a serial pipeline where we get the data, transform it and then output it one batch at a time:
+.. code-block:: python</p>
+<blockquote>
+<div><p>loader = get_generator(10)
+for data in loader:</p>
+<blockquote>
+<div><p>x = square(data)
+output(x)</p>
+</div></blockquote>
+</div></blockquote>
+<p>The for loop calls the loader.next() method 10 times sequentially, each time applying square followed by output. If you time the execution of this you’ll find it takes 20s as expected (10 x (0.5 + 1 + 0.5)).</p>
+<p>This is what the same pipeline looks like in Minipipe:
+.. code-block:: python</p>
+<blockquote>
+<div><p>p = Source(loader)()
+p = Transform(square)(p)
+p = Sink(output)(p)</p>
+</div></blockquote>
+<p>If you’ve used the Keras Model API this will look familiar to you. Minipipe has three basic types of pipe segments: Sources, Transforms and Sinks. Each has one require argument which is either a generator (for Sources) or a function (Transforms and Sinks). Sources pass data downstream, Sinks accept data from upstream and Transforms do both. The output and input of a pipe segment is always another pipe segment, which allows them to be chained together into DAGs (but not loops). When pipe segments are connected together they form a pipeline. All connected pipe segments share the same pipeline internally.</p>
+<p>We can run the pipeline with:
+.. code-block:: python</p>
+<blockquote>
+<div><p>p.run_pipeline()
+p.close_pipeline()</p>
+</div></blockquote>
+<p>If you time the execution of this you’ll find it takes 11s instead of 20s. That’s because each pipe segments executes on it’s own thread/process allowing for parallel execution. Of course dependent nodes still have to wait for data to be passed downstream, but once data is passed the node can start on the next batch without waiting for the full pipeline to be executed. Thus we expect the total time to be 0.5 (initial load) + 10 x (1) + 0.5 (final save) = 11s. The diagrams below illustrate the two pipeline graphs.</p>
+<p>Since Transform takes twice as long as Load and Save we can additionally speed things up by by increasing the number of Transform processes. Minipipe is designed for this type of “horizontal” parallelization as well:
+.. code-block:: python</p>
+<blockquote>
+<div><p>p = Source(loader)()
+p = Transform(square, n_processes=2)(p)
+p = Sink(output)(p)</p>
+</div></blockquote>
+<p>This is what the pipeline graph looks like now:
+image.png</p>
+<p>There are two separate Transform processes executing asynchronously. Each has a upstream queue connected to Load’s downstream queue so the first available Transform process will take the data. If you time the execution of this pipeline you’ll find it takes 6.5s (as expected), about 1/3rd of the original execution time.</p>
+<p>At this point the only way to speed things up further is to introduce parallel load processes. This can be done by supplying Source a list of generators:
+.. code-block:: python</p>
+<blockquote>
+<div><dl class="simple">
+<dt>def get_generator(start, stop, step):</dt><dd><dl class="simple">
+<dt>for i in range(start, stop, step):</dt><dd><p>time.sleep(0.5)
+yield i</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>g1 = get_generator(0, 10, 2) # generates even numbers
+g2 = get_generator(1, 10, 2) # generates odd numbers</p>
+<p>p = Source([g1, g2])()
+p = Transform(square, n_processes=4)(p)
+p = Sink(output, n_processes=2)(p)</p>
+<p>p.run_pipeline()
+p.close_pipeline()</p>
+</div></blockquote>
+<p>Now we have 9 processes running in total: 2 (Source) + 4 (Transform) + 2 (Sink) + 1 (main). We had to increase the number of processes in Transform and Sink otherwise they would cause a bottleneck. This pipeline now takes about 4.5s (as expected) to execute. Adding more Sources will only increase the throughput if the rest of the pipeline has enough resources to handle the downstream. Remember the throughput is only as fast as the slowest pipe segments: throughput = min(throughput_i).</p>
+<p>Lets summarize what we’ve found.
+Time (s)        Pipeline
+20      Serial pipline
+11      Minipipe pipeline
+6.5     Minipipe + bottleneck (Trans.) parallelization
+4.5     Minipipe + full parallelization (x2) + bottleneck parallelization
+Not bad. We’ve reduced processing time to less than 1/4th of the original. Theoretically, we can get it down to 2s if we create 10 sources, however that wouldn’t be a very realistic example because then we’d have to be able to fit all 10 data chunks into memory, which is what we wanted to avoid in the first place.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, James D. Pearce
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
