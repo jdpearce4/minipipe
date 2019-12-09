@@ -1,6 +1,6 @@
-""" Parent pipe classes """
+""" Derived Pipe classes """
 
-from base import Pipe, Sentinel
+from .base import Pipe, Sentinel
 
 class Source(Pipe):
     """
