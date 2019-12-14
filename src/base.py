@@ -79,7 +79,7 @@ class Stream(object):
         Based off of a multiprocessing queue, Stream handles moving data between Pipe segments.
     """
 
-    def __init__(self, name = 'stream', buffer_size=1, timeout=None, monitor=False):
+    def __init__(self, name = 'stream', buffer_size=3, timeout=None, monitor=False):
         self.q = Queue(buffer_size)
         self.timeout = timeout
         self.buffer_size = buffer_size
@@ -186,17 +186,15 @@ class Pipe(object):
 
     """
 
-    def __init__(self, functor, name, upstreams=[], downstreams=[],
-                 ignore_exceptions=[], init_kwargs={}, stateful=False):
+    def __init__(self, functor_obj, name, upstreams=None, downstreams=None, ignore_exceptions=None, init_kwargs=None):
 
         # Public methods
-        self.functor = functor
+        self.functor_obj = functor_obj
         self.name = name
-        self.init_kwargs = init_kwargs
-        self.stateful = stateful
-        self.upstreams = upstreams
-        self.downstreams = downstreams
-        self.ignore_exceptions = ignore_exceptions
+        self.init_kwargs = init_kwargs or {}
+        self.upstreams = upstreams or []
+        self.downstreams = downstreams or []
+        self.ignore_exceptions = ignore_exceptions or []
 
         # Private methods
         self._n_desc = 0
@@ -302,20 +300,33 @@ class Pipe(object):
             return True
 
     def run_functor(self):
+        # To be implemented in derived classes
         pass
 
     def run_pipe(self, name=None):
-
-        if self.stateful:
-            assert hasattr(self.functor, 'run'), 'ERROR: stateful functor class must implement "run" method'
-            cls = self.functor(**self.init_kwargs)
-            self.functor = cls.run
+        # This method is called once on local process
 
         if name is not None:
             self.name = name
 
+        # Check if local_init exists and if so initialize on local process
+        if hasattr(self.functor_obj, 'local_init'):
+            self.functor_obj.local_init(**self.init_kwargs)
+
+        # Check if run method exists, if so use it as functor, otherwise use __call__ method
+        if hasattr(self.functor_obj, 'run'):
+            self.functor = self.functor_obj.run
+        else:
+            self.functor = self.functor_obj
+
         try:
+            # run functor loop on local process
             self.run_functor()
+
+            # check if local_term method exists, if so run once after pipe segment has terminated
+            if hasattr(self.functor_obj, 'local_term'):
+                self.functor_obj.local_term()
+
         except KeyboardInterrupt:
             self._logger.log("KeyboardInterrupt", self.name, 'error')
 
@@ -378,7 +389,7 @@ class PipeSystem(object):
 
     """
 
-    def __init__(self, pipes=[]):
+    def __init__(self, pipes):
         self.pipes = pipes
         self.streams = None
         self.processes = None

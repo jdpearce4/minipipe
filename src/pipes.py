@@ -5,21 +5,22 @@ from .base import Pipe, Sentinel
 class Source(Pipe):
     """
         Source pipes are used to load and/or generate data. Sources have no upstreams, but will have one or more
-        downstreams.
+        downstreams. Functor must be a valid Python generator. The generator should not be initialized instead use
+        init_kwargs to supply the initialization generator on local process.
 
         :param functor: Python generator
         :param name: String associated with pipe segment
         :param downstreams: List of Streams that are outputs of functor
         :param ignore_exceptions: List of exceptions to ignore while pipeline is running
-        :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
-        :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
+        :param init_kwargs: Kwargs to initialize functor generator on local process
     """
 
-    def __init__(self, functor, name='Source', downstreams=[],
-                 ignore_exceptions=[], init_kwargs={}, stateful=False):
+    def __init__(self, functor_obj, name='Source', downstreams=None,
+                 ignore_exceptions=None, init_kwargs=None):
+
         # Source has no upstreams
-        super(Source, self).__init__(functor, name, [], downstreams,
-                                     ignore_exceptions, init_kwargs, stateful)
+        super(Source, self).__init__(functor_obj, name, None, downstreams,
+                                     ignore_exceptions, init_kwargs)
 
     def run_functor(self):
 
@@ -37,10 +38,14 @@ class Source(Pipe):
                 if x is None:
                     continue
                 self._out(x)
+
+            # Terminate once end of generator is reached
             except StopIteration:
                 self._logger.log('End of stream', self.name)
                 self._terminate_local()
-            except BaseException as e: # These exceptions are ignored raising WARNING only
+
+            # These exceptions are ignored raising WARNING only
+            except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
                     self._logger.log(str(e), self.name, 'warning')
                     continue
@@ -52,26 +57,27 @@ class Source(Pipe):
 
 class Sink(Pipe):
     """
-            Sink pipes are typically used to save data. Sinks have no downstreams, but will have one or more
-            upstreams.
+            Sink pipes are typically used to save/output data. Sinks have no downstreams, but will have one or more
+            upstreams. Functor should be either a Python function or class with a "run" method and optionally
+            "local_init" and "local_term" methods. Local_init, if supplied will be called once on the local process
+            before run, while local_term will be called once afterwards.
 
             :param functor: Python function or class
             :param name: String associated with pipe segment
             :param upstreams: List of Streams that are inputs to functor
             :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
             :param ignore_exceptions: List of exceptions to ignore while pipeline is running
-            :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
 
         """
 
-    def __init__(self, functor, name='Sink', upstreams=[],
-                 ignore_exceptions=[], init_kwargs={}, stateful=False):
+    def __init__(self, functor_obj, name='Sink', upstreams=None,
+                 ignore_exceptions=None, init_kwargs=None):
+
         # Sink has no downstreams
-        super(Sink, self).__init__(functor, name, upstreams, [],
-                                   ignore_exceptions, init_kwargs, stateful)
+        super(Sink, self).__init__(functor_obj, name, upstreams, None,
+                                   ignore_exceptions, init_kwargs)
 
     def run_functor(self):
-        # Function functors are statless transformations
 
         x = None
         while self._continue():
@@ -86,7 +92,9 @@ class Sink(Pipe):
                     continue
                 x = self.functor(*x)
                 self._out(x)
-            except BaseException as e: # These exceptions are ignored raising WARNING only
+
+            # These exceptions are ignored raising WARNING only
+            except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
                     self._logger.log(str(e), self.name, 'warning')
                     continue
@@ -99,7 +107,9 @@ class Sink(Pipe):
 class Transform(Pipe):
     """
             Transform pipes are used to perform arbitrary transformations on data. Transforms will have one or more
-            upstreams and downstreams.
+            upstreams and downstreams. Functor should be either a Python function or class with a "run" method and optionally
+            "local_init" and "local_term" methods. Local_init, if supplied will be called once on the local process
+            before run, while local_term will be called once afterwards.
 
             :param functor: Python function or class
             :param name: String associated with pipe segment
@@ -107,14 +117,13 @@ class Transform(Pipe):
             :param downstreams: List of Streams that are outputs of functor
             :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
             :param ignore_exceptions: List of exceptions to ignore while pipeline is running
-            :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
-
         """
 
-    def __init__(self, functor, name='Transform', upstreams=[], downstreams=[],
-                 ignore_exceptions=[], init_kwargs={}, stateful=False):
-        super(Transform, self).__init__(functor, name, upstreams, downstreams,
-                                        ignore_exceptions, init_kwargs, stateful)
+    def __init__(self, functor_obj, name='Transform', upstreams=None, downstreams=None,
+                 ignore_exceptions=None, init_kwargs=None):
+
+        super(Transform, self).__init__(functor_obj, name, upstreams, downstreams,
+                                        ignore_exceptions, init_kwargs)
 
     def run_functor(self):
 
@@ -131,7 +140,9 @@ class Transform(Pipe):
                     continue
                 x = self.functor(*x)
                 self._out(x)
-            except BaseException as e: # These exceptions are ignored raising WARNING only
+
+            # These exceptions are ignored raising WARNING only
+            except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
                     self._logger.log(str(e), self.name, 'warning')
                     continue
@@ -142,8 +153,10 @@ class Transform(Pipe):
 
 class Regulator(Pipe):
     """
-            Regulator pipes are a special type of transformation that changes the data chuck throughput. Regulators can
-            have both upstreams and downstreams. Typically used to batching or accumulating data.
+            Regulator pipes are a special type of transformation that changes the data chunk throughput, typically used
+            for batching or accumulating data. Regulators can have both upstreams and downstreams. Functor should be a
+            Python coroutine. The coroutine should not be initialized, instead use init_kwargs to initialize on the local
+            process.
 
             :param functor: Python coroutines
             :param name: String associated with pipe segment
@@ -151,13 +164,13 @@ class Regulator(Pipe):
             :param downstreams: List of Streams that are outputs of functor
             :param init_kwargs: Kwargs to initiate class object on process (no used when func_type = 'function')
             :param ignore_exceptions: List of exceptions to ignore while pipeline is running
-            :param stateful: Set to True when using a class functor. Class functors must implement a 'run' method
         """
 
-    def __init__(self, functor, name='Regulator', upstreams=[], downstreams=[],
-                 ignore_exceptions=[], init_kwargs={}, stateful=False):
-        super(Regulator, self).__init__(functor, name, upstreams, downstreams,
-                                        ignore_exceptions, init_kwargs, stateful)
+    def __init__(self, functor_obj, name='Regulator', upstreams=None, downstreams=None,
+                 ignore_exceptions=None, init_kwargs=None):
+
+        super(Regulator, self).__init__(functor_obj, name, upstreams, downstreams,
+                                        ignore_exceptions, init_kwargs)
 
     def run_functor(self):
 
@@ -187,7 +200,9 @@ class Regulator(Pipe):
                         corountine = self.functor(**self.init_kwargs)
                         next(corountine)
                         break
-            except BaseException as e: # These exceptions are ignored raising WARNING only
+
+            # These exceptions are ignored raising WARNING only
+            except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
                     self._logger.log(str(e), self.name, 'warning')
                     continue
