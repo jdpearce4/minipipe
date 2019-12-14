@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Parent Classes" href="pipes.html" />
-    <link rel="prev" title="Introduction to PipeLine" href="examples/toy_example.html" /> 
+    <link rel="next" title="Pipes" href="pipes.html" />
+    <link rel="prev" title="Introduction to PipeSystems" href="examples/into_pipesys.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -84,8 +84,10 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html#Fibonacci-Sequence">Fibonacci Sequence</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Base Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pipes.html">Parent Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipes</a></li>
 </ul>
 
             
@@ -211,7 +213,7 @@ By default logger is set to INFO.</p>
 
 <dl class="class">
 <dt id="base.Pipe">
-<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">Pipe</code><span class="sig-paren">(</span><em class="sig-param">functor</em>, <em class="sig-param">name</em>, <em class="sig-param">upstreams=[]</em>, <em class="sig-param">downstreams=[]</em>, <em class="sig-param">ignore_exceptions=[]</em>, <em class="sig-param">init_kwargs={}</em>, <em class="sig-param">stateful=False</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Pipe" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">Pipe</code><span class="sig-paren">(</span><em class="sig-param">functor_obj</em>, <em class="sig-param">name</em>, <em class="sig-param">upstreams=None</em>, <em class="sig-param">downstreams=None</em>, <em class="sig-param">ignore_exceptions=None</em>, <em class="sig-param">init_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Pipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for all pipe segments. Pipes use two sets of Streams: upstreams and downstreams.
 Generally Pipes except data from upstreams and pass downstream after a transformation.
 All pipe segments run on their own thread or process, which allows them to run in
@@ -254,7 +256,7 @@ on the downstreams. This allows the user to create ‘switches’ based on inter
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">print_out</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">print</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Define pipeline</span>
 <span class="n">pline</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">()</span>
@@ -275,7 +277,7 @@ on the downstreams. This allows the user to create ‘switches’ based on inter
 
 <dl class="class">
 <dt id="base.PipeSystem">
-<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">PipeSystem</code><span class="sig-paren">(</span><em class="sig-param">pipes=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#base.PipeSystem" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">PipeSystem</code><span class="sig-paren">(</span><em class="sig-param">pipes</em><span class="sig-paren">)</span><a class="headerlink" href="#base.PipeSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>PipeSystem connects Pipes and creates process pool. Pipes are run and closed with a built PipeSystem.</p>
 <p>Toy example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define functors</span>
@@ -292,13 +294,13 @@ on the downstreams. This allows the user to create ‘switches’ based on inter
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">output_gt_1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s1">&#39;1 &lt;&#39;</span><span class="p">,</span><span class="n">x</span>
+    <span class="nb">print</span> <span class="s1">&#39;1 &lt;&#39;</span><span class="p">,</span><span class="n">x</span>
 
 <span class="k">def</span> <span class="nf">output_lt_1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s1">&#39;1 &gt;&#39;</span><span class="p">,</span><span class="n">x</span>
+    <span class="nb">print</span> <span class="s1">&#39;1 &gt;&#39;</span><span class="p">,</span><span class="n">x</span>
 
 <span class="c1"># Define streams</span>
 <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s5</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">()</span>
@@ -337,7 +339,7 @@ passed to a Pipe it will shut itself down.</p>
 
 <dl class="class">
 <dt id="base.Stream">
-<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">Stream</code><span class="sig-paren">(</span><em class="sig-param">name='stream'</em>, <em class="sig-param">buffer_size=1</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">monitor=False</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Stream" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">Stream</code><span class="sig-paren">(</span><em class="sig-param">name='stream'</em>, <em class="sig-param">buffer_size=3</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">monitor=False</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Stream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Based off of a multiprocessing queue, Stream handles moving data between Pipe segments.</p>
 </dd></dl>
 
@@ -351,10 +353,10 @@ passed to a Pipe it will shut itself down.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="pipes.html" class="btn btn-neutral float-right" title="Parent Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="pipes.html" class="btn btn-neutral float-right" title="Pipes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="examples/toy_example.html" class="btn btn-neutral float-left" title="Introduction to PipeLine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="examples/into_pipesys.html" class="btn btn-neutral float-left" title="Introduction to PipeSystems" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

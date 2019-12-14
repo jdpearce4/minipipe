@@ -83,8 +83,10 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html#Fibonacci-Sequence">Fibonacci Sequence</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">Base Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipe_segments.html">Pipes</a></li>
 </ul>
 
             
@@ -175,46 +177,81 @@
 </style>
 <div class="section" id="minipipe-a-mini-batch-pipeline">
 <h1>MiniPipe: A mini-batch pipeline<a class="headerlink" href="#minipipe-a-mini-batch-pipeline" title="Permalink to this headline">¶</a></h1>
-<p>MiniPipe is a mini-batch pipeline designed for training machine learning models on very large datasets in a streaming
-fashion, written in pure python. MiniPipe is designed for situations where the data are too large to fit into memory,
+<p>MiniPipe is a mini-batch pipeline designed for training machine learning models on out-of-memory datasets in a streaming
+fashion, written in pure Python. MiniPipe is for situations where the data are too large to fit into memory,
 or when doing so would discourage experiment iterations due to prohibitively long loading and/or processing times.</p>
-<p>Instead of a distributed approach to model training MiniPipe is designed around a streaming paradigm that utilizes
+<p>Instead of a distributed approach MiniPipe is designed around a streaming paradigm that utilizes
 pipeline parallelism. In the intended use case data are loaded from a data lake one ‘chunk’ at a time. Such an approach
 requires a training method that allows for iterative training on small batches of data (mini-batches) such as
 stochastic gradient decent.</p>
-<p>A MiniPipe pipeline is build up from pipe segments, which may be connected to form a DAG. In the general case, each
-pipe segments has two queues, one for accepting upstream data (inputs) and another for passing data downstream (outputs).
-All pipe segments run on their own process which allows for asynchronous pipeline parallelization (see figure below).
+<p>The goal of MiniPipe is to encourage experimentation and prototyping at full scale by making complex training
+pipelines simple, flexible and fast. The look and feel of the Minipipe API is based on the very successful Keras Model
+API, which strikes a good balance between simplicity and flexibility.</p>
+<div class="section" id="pipeline-parallelism">
+<h2>Pipeline Parallelism<a class="headerlink" href="#pipeline-parallelism" title="Permalink to this headline">¶</a></h2>
+<p>A MiniPipe pipeline is build up from pipe segments, which may be connected to form a graph. Pipe segments are connected by
+queues, for accepting upstream data (inputs) and for passing data downstream (outputs).</p>
+<p>Consider this simple example.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">minipipe</span> <span class="k">as</span> <span class="nn">mp</span>
+
+<span class="n">pline</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">PipeLine</span><span class="p">()</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">loader</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Transform</span><span class="p">(</span><span class="n">transform</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Sink</span><span class="p">(</span><span class="n">save</span><span class="p">))</span>
+
+<span class="n">pline</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Where <cite>loader</cite>, <cite>transform</cite> and <cite>save</cite> are all user defined functions. If you’ve used the Keras Sequential API this will
+look familiar to you. MiniPipe has three basic types of pipe segments: Sources, Transforms and Sinks. Each has one
+requires an argument called functor. For Sources functors must always be an uninitialized generator, while for Sinks
+and Transforms functors can be either a function or a class (with a <cite>run</cite> method).</p>
+<p>Sources pass data downstream, Sinks accept data from upstream and Transforms do both. In the PipeLine API pipe segments
+are connected by adding them to an initialized <cite>PipeLine</cite> and then calling the <cite>PipeLine.build</cite> method.</p>
+<p>All pipe segments run on their own process which allows for asynchronous pipeline parallelization (see figure below).
 Such parallelization can dramatically increase the throughput of a pipeline and reduce training/processing times.</p>
+</div>
 <div class="section" id="serial-vs-pipeline-parallel">
 <h2>Serial vs Pipeline Parallel<a class="headerlink" href="#serial-vs-pipeline-parallel" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="_images/toy_example_serial.png"><img alt="pic1" src="_images/toy_example_serial.png" style="width: 45%;" /></a>  <a class="reference internal" href="_images/toy_example_parallel.png"><img alt="pic2" src="_images/toy_example_parallel.png" style="width: 45%;" /></a></p>
-<p>Additionally MiniPipe allows for horizontal parallelism, allowing for multiple processes to be assigned to bottleneck.
-For example, if in the above diagram Transform turns is slower than load and save multiple processes may be assigned to it.</p>
+<p><a class="reference internal" href="_images/toy_example_serial.png"><img alt="pic1" src="_images/toy_example_serial.png" style="width: 30%;" /></a>  <a class="reference internal" href="_images/toy_example_parallel.png"><img alt="pic2" src="_images/toy_example_parallel.png" style="width: 30%;" /></a></p>
+</div>
+<div class="section" id="horizontal-parallelism">
+<h2>Horizontal Parallelism<a class="headerlink" href="#horizontal-parallelism" title="Permalink to this headline">¶</a></h2>
+<p>Additionally MiniPipe allows for horizontal parallelism, allowing for multiple processes to be assigned to bottlenecks.
+For example, if in the above example Transform is slower than load and save we can assign multiple processes to
+with with only one change to our code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pline</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">PipeLine</span><span class="p">()</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">loader</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Transform</span><span class="p">(</span><span class="n">transform</span><span class="p">),</span> <span class="n">n_processes</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># ask for 2 processes</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Sink</span><span class="p">(</span><span class="n">save</span><span class="p">))</span>
+
+<span class="n">pline</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A process pool is created for <cite>transform</cite> relieving the bottleneck.</p>
 </div>
 <div class="section" id="horizonal-parallelism">
 <h2>Horizonal Parallelism<a class="headerlink" href="#horizonal-parallelism" title="Permalink to this headline">¶</a></h2>
-<a class="reference internal image-reference" href="_images/toy_example_parallel_horizonal.png"><img alt="_images/toy_example_parallel_horizonal.png" src="_images/toy_example_parallel_horizonal.png" style="width: 90%;" /></a>
-<p>MiniPipe is flexible allowing for generic graph topologies to fit any workflow. In the development cycle of machine
-learning models its often necessary to train multiple models to test out different hyperparameters, feature sets,
+<a class="reference internal image-reference" href="_images/toy_example_parallel_horizonal.png"><img alt="_images/toy_example_parallel_horizonal.png" src="_images/toy_example_parallel_horizonal.png" style="width: 60%;" /></a>
+</div>
+<div class="section" id="machine-learning-pipelines">
+<h2>Machine Learning Pipelines<a class="headerlink" href="#machine-learning-pipelines" title="Permalink to this headline">¶</a></h2>
+<p>MiniPipe is flexible allowing for generic graph topologies to fit any workflow. In the ML development cycle
+its often necessary to train multiple models to test out different hyperparameters, feature sets,
 preprocessing or variations on the model itself.</p>
 <p>Consider the scenario of hyperparameter tunning where one would like to test out multiple models that use the same
 training set and preprocessing. It would be inefficient to have a separate pipeline for each model since you’d need to
-loading and preprocessing the same data multiple times. Instead one could use MiniPipe to set up a pipeline that loads
-processes the data once but feeds the result to multiple GPUs for training as shown below.</p>
+load and preprocess the same data multiple times. Instead one could use MiniPipe to set up a pipeline that loads
+and processes the data once, feeding the result to multiple GPUs for training as shown below.</p>
 </div>
 <div class="section" id="multi-model-training-pipeline">
 <h2>Multi-model Training Pipeline<a class="headerlink" href="#multi-model-training-pipeline" title="Permalink to this headline">¶</a></h2>
 <a class="reference internal image-reference" href="_images/multigpu_training_pipeline.png"><img alt="_images/multigpu_training_pipeline.png" src="_images/multigpu_training_pipeline.png" style="width: 90%;" /></a>
 <p>This is just one example of many possible pipelines that can make your machine learning workflow more efficient.</p>
-<p>The goal of MiniPipe is to encourage experimentation and prototyping at full data scale by making complex training
-pipelines simple, flexible and fast. The look and feel of the Minipipe API is based on the very successful Keras Model
-API, which strikes a good balance between simplicity and flexibility.</p>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>Installation is super easy with pip:
-.. code:</p>
+<p>Installation is super easy with pip:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">minipipe</span>
 </pre></div>
 </div>
@@ -224,11 +261,13 @@ API, which strikes a good balance between simplicity and flexibility.</p>
 <li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="examples/toy_example.html#Serial-Pipeline-(without-MiniPipe)">Serial Pipeline (without MiniPipe)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/toy_example.html#MiniPipe:-Pipeline-Parallel">MiniPipe: Pipeline Parallel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/toy_example.html#MiniPipe:-Horizonal-Scaling">MiniPipe: Horizonal Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/toy_example.html#MiniPipe:-Horizontal-Scaling">MiniPipe: Horizontal Scaling</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html#Fibonacci-Sequence">Fibonacci Sequence</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">Base Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipe_segments.html">Pipes</a></li>
 </ul>
 </div>
 </div>

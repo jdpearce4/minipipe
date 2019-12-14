@@ -15,13 +15,15 @@ pipelines simple, flexible and fast. The look and feel of the Minipipe API is ba
 API, which strikes a good balance between simplicity and flexibility.
 
 Pipeline Parallelism
----------------------
+----------------------
 
 A MiniPipe pipeline is build up from pipe segments, which may be connected to form a graph. Pipe segments are connected by
 queues, for accepting upstream data (inputs) and for passing data downstream (outputs).
 
 Consider this simple example.
+
 .. code-block:: python
+
     import minipipe as mp
 
     pline = mp.PipeLine()
@@ -43,23 +45,24 @@ All pipe segments run on their own process which allows for asynchronous pipelin
 Such parallelization can dramatically increase the throughput of a pipeline and reduce training/processing times.
 
 Serial vs Pipeline Parallel
----------------------------
+----------------------------
 |pic1|  |pic2|
 
 .. |pic1| image:: images/toy_example_serial.png
-   :width: 35%
+   :width: 30%
 
 .. |pic2| image:: images/toy_example_parallel.png
-   :width: 35%
+   :width: 30%
 
 Horizontal Parallelism
 -----------------------
 
 Additionally MiniPipe allows for horizontal parallelism, allowing for multiple processes to be assigned to bottlenecks.
 For example, if in the above example Transform is slower than load and save we can assign multiple processes to
-with with only one change to our code:
+with with only one change to our code
 
 .. code-block:: python
+
     pline = mp.PipeLine()
     pline.add(mp.Source(loader))
     pline.add(mp.Transform(transform), n_processes=2) # ask for 2 processes
@@ -72,7 +75,7 @@ A process pool is created for `transform` relieving the bottleneck.
 Horizonal Parallelism
 ----------------------
 .. image:: images/toy_example_parallel_horizonal.png
-   :width: 70%
+   :width: 60%
 
 Machine Learning Pipelines
 ---------------------------
@@ -87,7 +90,7 @@ load and preprocess the same data multiple times. Instead one could use MiniPipe
 and processes the data once, feeding the result to multiple GPUs for training as shown below.
 
 Multi-model Training Pipeline
--------------------------
+------------------------------
 .. image:: images/multigpu_training_pipeline.png
    :width: 90%
 
@@ -96,6 +99,7 @@ This is just one example of many possible pipelines that can make your machine l
 Installation
 -------------
 Installation is super easy with pip::
+
     pip install minipipe
 
 
@@ -106,7 +110,7 @@ Installation is super easy with pip::
    examples/toy_example.ipynb
    examples/into_pipesys.ipynb
    base
-   pipes
+   pipe_segments
 
 
 Indices and tables

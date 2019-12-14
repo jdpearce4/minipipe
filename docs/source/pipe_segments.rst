@@ -1,5 +1,5 @@
 Pipes
 **************
 
-.. automodule:: pipes
+.. automodule:: pipe_segments
     :members:

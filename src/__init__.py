@@ -6,7 +6,7 @@ from .base import Stream
 from .base import Pipe
 from .base import PipeSystem
 from .base import PipeLine
-from .pipes import Source
-from .pipes import Sink
-from .pipes import Transform
-from .pipes import Regulator
+from .pipe_segments import Source
+from .pipe_segments import Sink
+from .pipe_segments import Transform
+from .pipe_segments import Regulator

@@ -83,8 +83,14 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html#Fibonacci-Sequence">Fibonacci Sequence</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">Base Classes</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Pipes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pipes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-problem">The problem:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directions">Directions:</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -175,85 +181,111 @@
 </style>
 <div class="section" id="module-pipes">
 <span id="pipes"></span><h1>Pipes<a class="headerlink" href="#module-pipes" title="Permalink to this headline">¶</a></h1>
-<p>Parent pipe classes</p>
-<dl class="class">
-<dt id="pipes.Regulator">
-<em class="property">class </em><code class="sig-prename descclassname">pipes.</code><code class="sig-name descname">Regulator</code><span class="sig-paren">(</span><em class="sig-param">functor</em>, <em class="sig-param">name='Regulator'</em>, <em class="sig-param">upstreams=[]</em>, <em class="sig-param">downstreams=[]</em>, <em class="sig-param">ignore_exceptions=[]</em>, <em class="sig-param">init_kwargs={}</em>, <em class="sig-param">stateful=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Regulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Regulator pipes are a special type of transformation that changes the data chuck throughput. Regulators can
-have both upstreams and downstreams. Typically used to batching or accumulating data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>functor</strong> – Python coroutines</p></li>
-<li><p><strong>name</strong> – String associated with pipe segment</p></li>
-<li><p><strong>upstreams</strong> – List of Streams that are inputs to functor</p></li>
-<li><p><strong>downstreams</strong> – List of Streams that are outputs of functor</p></li>
-<li><p><strong>init_kwargs</strong> – Kwargs to initiate class object on process (no used when func_type = ‘function’)</p></li>
-<li><p><strong>ignore_exceptions</strong> – List of exceptions to ignore while pipeline is running</p></li>
-<li><p><strong>stateful</strong> – Set to True when using a class functor. Class functors must implement a ‘run’ method</p></li>
-</ul>
+<p>Conversion pipeline templates.</p>
+<div class="section" id="the-problem">
+<h2>The problem:<a class="headerlink" href="#the-problem" title="Permalink to this headline">¶</a></h2>
+<p>Suppose you have some data that you want to convert to another format,
+such as from GIF image format to PPM image format.  Maybe the
+conversion involves several steps (e.g. piping it through compress or
+uuencode).  Some of the conversion steps may require that their input
+is a disk file, others may be able to read standard input; similar for
+their output.  The input to the entire conversion may also be read
+from a disk file or from an open file, and similar for its output.</p>
+<p>The module lets you construct a pipeline template by sticking one or
+more conversion steps together.  It will take care of creating and
+removing temporary files if they are necessary to hold intermediate
+data.  You can then use the template to do conversions from many
+different sources to many different destinations.  The temporary
+file names used are different each time the template is used.</p>
+<p>The templates are objects so you can create templates for many
+different conversion steps and store them in a dictionary, for
+instance.</p>
+</div>
+<div class="section" id="directions">
+<h2>Directions:<a class="headerlink" href="#directions" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>To create a template:</dt><dd><p>t = Template()</p>
+</dd>
+<dt>To add a conversion step to a template:</dt><dd><p>t.append(command, kind)</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="pipes.Sink">
-<em class="property">class </em><code class="sig-prename descclassname">pipes.</code><code class="sig-name descname">Sink</code><span class="sig-paren">(</span><em class="sig-param">functor</em>, <em class="sig-param">name='Sink'</em>, <em class="sig-param">upstreams=[]</em>, <em class="sig-param">ignore_exceptions=[]</em>, <em class="sig-param">init_kwargs={}</em>, <em class="sig-param">stateful=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Sink" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sink pipes are typically used to save data. Sinks have no downstreams, but will have one or more
-upstreams.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>functor</strong> – Python function or class</p></li>
-<li><p><strong>name</strong> – String associated with pipe segment</p></li>
-<li><p><strong>upstreams</strong> – List of Streams that are inputs to functor</p></li>
-<li><p><strong>init_kwargs</strong> – Kwargs to initiate class object on process (no used when func_type = ‘function’)</p></li>
-<li><p><strong>ignore_exceptions</strong> – List of exceptions to ignore while pipeline is running</p></li>
-<li><p><strong>stateful</strong> – Set to True when using a class functor. Class functors must implement a ‘run’ method</p></li>
-</ul>
+<p>where kind is a string of two characters: the first is ‘-‘ if the
+command reads its standard input or ‘f’ if it requires a file; the
+second likewise for the output. The command must be valid /bin/sh
+syntax.  If input or output files are required, they are passed as
+$IN and $OUT; otherwise, it must be  possible to use the command in
+a pipeline.</p>
+<dl class="simple">
+<dt>To add a conversion step at the beginning:</dt><dd><p>t.prepend(command, kind)</p>
+</dd>
+<dt>To convert a file to another file using a template:</dt><dd><p>sts = t.copy(infile, outfile)</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="pipes.Source">
-<em class="property">class </em><code class="sig-prename descclassname">pipes.</code><code class="sig-name descname">Source</code><span class="sig-paren">(</span><em class="sig-param">functor</em>, <em class="sig-param">name='Source'</em>, <em class="sig-param">downstreams=[]</em>, <em class="sig-param">ignore_exceptions=[]</em>, <em class="sig-param">init_kwargs={}</em>, <em class="sig-param">stateful=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Source" title="Permalink to this definition">¶</a></dt>
-<dd><p>Source pipes are used to load and/or generate data. Sources have no upstreams, but will have one or more
-downstreams.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>functor</strong> – Python generator</p></li>
-<li><p><strong>name</strong> – String associated with pipe segment</p></li>
-<li><p><strong>downstreams</strong> – List of Streams that are outputs of functor</p></li>
-<li><p><strong>ignore_exceptions</strong> – List of exceptions to ignore while pipeline is running</p></li>
-<li><p><strong>init_kwargs</strong> – Kwargs to initiate class object on process (no used when func_type = ‘function’)</p></li>
-<li><p><strong>stateful</strong> – Set to True when using a class functor. Class functors must implement a ‘run’ method</p></li>
-</ul>
+<p>If infile or outfile are the empty string, standard input is read or
+standard output is written, respectively.  The return value is the
+exit status of the conversion pipeline.</p>
+<dl class="simple">
+<dt>To open a file for reading or writing through a conversion pipeline:</dt><dd><p>fp = t.open(file, mode)</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="pipes.Transform">
-<em class="property">class </em><code class="sig-prename descclassname">pipes.</code><code class="sig-name descname">Transform</code><span class="sig-paren">(</span><em class="sig-param">functor</em>, <em class="sig-param">name='Transform'</em>, <em class="sig-param">upstreams=[]</em>, <em class="sig-param">downstreams=[]</em>, <em class="sig-param">ignore_exceptions=[]</em>, <em class="sig-param">init_kwargs={}</em>, <em class="sig-param">stateful=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Transform" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform pipes are used to perform arbitrary transformations on data. Transforms will have one or more
-upstreams and downstreams.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>functor</strong> – Python function or class</p></li>
-<li><p><strong>name</strong> – String associated with pipe segment</p></li>
-<li><p><strong>upstreams</strong> – List of Streams that are inputs to functor</p></li>
-<li><p><strong>downstreams</strong> – List of Streams that are outputs of functor</p></li>
-<li><p><strong>init_kwargs</strong> – Kwargs to initiate class object on process (no used when func_type = ‘function’)</p></li>
-<li><p><strong>ignore_exceptions</strong> – List of exceptions to ignore while pipeline is running</p></li>
-<li><p><strong>stateful</strong> – Set to True when using a class functor. Class functors must implement a ‘run’ method</p></li>
-</ul>
+<p>where mode is ‘r’ to read the file, or ‘w’ to write it – just like
+for the built-in function open() or for os.popen().</p>
+<dl class="simple">
+<dt>To create a new template object initialized to a given one:</dt><dd><p>t2 = t.clone()</p>
 </dd>
 </dl>
+<dl class="class">
+<dt id="pipes.Template">
+<em class="property">class </em><code class="sig-prename descclassname">pipes.</code><code class="sig-name descname">Template</code><a class="headerlink" href="#pipes.Template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a pipeline template.</p>
+<dl class="method">
+<dt id="pipes.Template.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">cmd</em>, <em class="sig-param">kind</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Template.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>t.append(cmd, kind) adds a new step at the end.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="pipes.Template.clone">
+<code class="sig-name descname">clone</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Template.clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>t.clone() returns a new pipeline template with identical
+initial state as the current one.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipes.Template.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><em class="sig-param">flag</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Template.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>t.debug(flag) turns debugging on or off.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipes.Template.open">
+<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">file</em>, <em class="sig-param">rw</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Template.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>t.open(file, rw) returns a pipe or file object open for
+reading or writing; the file is the other end of the pipeline.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipes.Template.open_r">
+<code class="sig-name descname">open_r</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Template.open_r" title="Permalink to this definition">¶</a></dt>
+<dd><p>t.open_r(file) and t.open_w(file) implement
+t.open(file, ‘r’) and t.open(file, ‘w’) respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipes.Template.prepend">
+<code class="sig-name descname">prepend</code><span class="sig-paren">(</span><em class="sig-param">cmd</em>, <em class="sig-param">kind</em><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Template.prepend" title="Permalink to this definition">¶</a></dt>
+<dd><p>t.prepend(cmd, kind) adds a new step at the front.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipes.Template.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pipes.Template.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>t.reset() restores a pipeline template to its initial state.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 

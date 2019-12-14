@@ -7,7 +7,7 @@ or when doing so would discourage experiment iterations due to prohibitively lon
 """
 
 setup(name='minipipe',
-      version='0.1.6',
+      version='0.1.7',
       description='A machine learning mini-batch pipeline for out-of-memory training',
       long_description=long_description,
       long_description_content_type="text/markdown",
