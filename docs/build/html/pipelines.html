@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Pipeline Classes &mdash; minipipe 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Pipes Segment Classes" href="pipes.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> minipipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/stateful_functors.html">Stateful Functors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">Base Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipes Segment Classes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pipeline Classes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">minipipe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Pipeline Classes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pipelines.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="pipeline-classes">
+<h1>Pipeline Classes<a class="headerlink" href="#pipeline-classes" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pipelines"></span><p>Minipipe has two APIs PipeLine and PipeSystem. PipeLine is for sequential pipelines while
+PipeSystem can be used in any topology.</p>
+<dl class="class">
+<dt id="pipelines.PipeLine">
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">PipeLine</code><span class="sig-paren">(</span><em class="sig-param">monitor=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simplified API for linear PipeSytems.</p>
+<p>Toy example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define functors</span>
+<span class="k">def</span> <span class="nf">genRand</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">batch_size</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch_size</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">sumBatch</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">print_out</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Define pipeline</span>
+<span class="n">pline</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">()</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source1&#39;</span><span class="p">,</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;generator&#39;</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="s1">&#39;batcher&#39;</span><span class="p">,</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;coroutine&#39;</span><span class="p">),</span> <span class="n">buffer_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">),</span> <span class="n">n_processes</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">print_out</span><span class="p">,</span> <span class="s1">&#39;print&#39;</span><span class="p">))</span>
+
+<span class="c1"># Build pipeline</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="c1"># Run pipeline</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="pipelines.PipeLine.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">pipe</em>, <em class="sig-param">n_processes=1</em>, <em class="sig-param">buffer_size=3</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeLine.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a pipe segment to the pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pipe</strong> – Pipe segment to add to PipeLine</p></li>
+<li><p><strong>n_processes</strong> – Number of processes (workers) to assign to pipe segment</p></li>
+<li><p><strong>buffer_size</strong> – Size of Stream buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pipelines.PipeSystem">
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">PipeSystem</code><span class="sig-paren">(</span><em class="sig-param">pipes</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>PipeSystem connects Pipes and creates process pool. Pipes are run and closed with a built PipeSystem.</p>
+<p>Toy example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define functors</span>
+<span class="k">def</span> <span class="nf">genRand</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">batch_size</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch_size</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">sumBatch</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">output_gt_1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s1">&#39;1 &lt;&#39;</span><span class="p">,</span><span class="n">x</span>
+
+<span class="k">def</span> <span class="nf">output_lt_1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s1">&#39;1 &gt;&#39;</span><span class="p">,</span><span class="n">x</span>
+
+<span class="c1"># Define streams</span>
+<span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s5</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">()</span>
+
+<span class="c1"># Create Pipe segments with up/downstreams</span>
+<span class="c1"># Order is not important</span>
+<span class="n">pipes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source1&#39;</span><span class="p">,</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;generator&#39;</span><span class="p">),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source2&#39;</span><span class="p">,</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;generator&#39;</span><span class="p">),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="s1">&#39;batcher&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;coroutine&#39;</span><span class="p">),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">split</span><span class="p">,</span> <span class="s1">&#39;split&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s4</span><span class="p">,</span> <span class="n">s5</span><span class="p">]),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">output_gt_1</span><span class="p">,</span> <span class="s1">&#39;print_gt_1&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s4</span><span class="p">]),</span>
+    <span class="n">Pipe</span><span class="p">(</span><span class="n">output_lt_1</span><span class="p">,</span> <span class="s1">&#39;print_lt_1&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s5</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="c1"># Build pipesystem</span>
+<span class="n">psys</span> <span class="o">=</span> <span class="n">PipeSystem</span><span class="p">(</span><span class="n">pipes</span><span class="p">)</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="c1"># Run pipesystem</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="pipelines.PipeSystem.build">
+<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param">log_lvl='INFO'</em>, <em class="sig-param">monitor=False</em>, <em class="sig-param">ignore_exceptions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects pipe segments together and builds graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.PipeSystem.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Joins pipeline.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.PipeSystem.diagram">
+<code class="sig-name descname">diagram</code><span class="sig-paren">(</span><em class="sig-param">draw_streams=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem.diagram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a graph diagram of pipeline.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.PipeSystem.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets pipeline.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.PipeSystem.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs pipeline.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="pipes.html" class="btn btn-neutral float-left" title="Pipes Segment Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, James D. Pearce
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

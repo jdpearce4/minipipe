@@ -1,42 +1,50 @@
 """ Derived Pipe classes """
 
-from .base import Pipe, Sentinel
+from minipipe.base import Pipe, Sentinel
 
 class Source(Pipe):
     """
         Source pipes are used to load and/or generate data. Sources have no upstreams, but will have one or more
-        downstreams. Functor must be a valid Python generator. The generator should not be initialized instead use
-        init_kwargs to supply the initialization generator on local process.
+        downstreams. Functor must be a valid Python generator. The generator should be initialized before passing
+        as argument.
 
         :param functor: Python generator
         :param name: String associated with pipe segment
         :param downstreams: List of Streams that are outputs of functor
         :param ignore_exceptions: List of exceptions to ignore while pipeline is running
-        :param init_kwargs: Kwargs to initialize functor generator on local process
     """
 
-    def __init__(self, functor_obj, name='Source', downstreams=None,
-                 ignore_exceptions=None, init_kwargs=None):
+    def __init__(self, functor_obj, name='Source', downstreams=None, ignore_exceptions=None):
 
         # Source has no upstreams
-        super(Source, self).__init__(functor_obj, name, None, downstreams,
-                                     ignore_exceptions, init_kwargs)
+        super(Source, self).__init__(functor_obj, name, None, downstreams, ignore_exceptions)
 
     def run_functor(self):
 
         # Generator functors are used for sources
         # Will terminate once end of generator is reached
 
-        generator = self.functor(**self.init_kwargs)
         x = None
         while self._continue():
             try:
-                x = next(generator)
+
+                # Get next item from generator
+                try:
+                    x = next(self.functor)
+                except TypeError:
+                    # If generator is not initialized
+                    self.functor = self.functor()
+                    x = next(self.functor)
+
+                # Check for Sentinel signaling termination
                 if x is Sentinel:
                     self._terminate_local()
                     break
+
+                # Do nothing on python None
                 if x is None:
                     continue
+
                 self._out(x)
 
             # Terminate once end of generator is reached
@@ -82,14 +90,20 @@ class Sink(Pipe):
         x = None
         while self._continue():
             try:
+
                 x = self._in()
+
+                # Check for Sentinel signaling termination
                 if self._contains_sentinel(x):
                     if self._terminate_local():
                         break
                     else:
                         continue
+
+                # Do nothing on python None
                 if self._contains_none(x):
                     continue
+
                 x = self.functor(*x)
                 self._out(x)
 
@@ -130,14 +144,20 @@ class Transform(Pipe):
         x = None
         while self._continue():
             try:
+
                 x = self._in()
+
+                # Check for Sentinel signaling termination
                 if self._contains_sentinel(x):
                     if self._terminate_local():
                         break
                     else:
                         continue
+
+                # Do nothing on python None
                 if self._contains_none(x):
                     continue
+
                 x = self.functor(*x)
                 self._out(x)
 
@@ -178,27 +198,37 @@ class Regulator(Pipe):
         # Useful when the data needs to be broken up or accumulated
         # On StopIteration coroutine is reset
 
-        corountine = self.functor(**self.init_kwargs)
-        next(corountine)
+        coroutine = self.functor(**self.init_kwargs)
+        next(coroutine)
         x = None
         while self._continue():
             try:
+
                 x = self._in()
+
+                # Check for Sentinel signaling termination
                 if self._contains_sentinel(x):
                     if self._terminate_local():
                         break
                     else:
                         continue
+
+                # Do nothing on python None
                 if self._contains_none(x):
                     continue
-                x_i = corountine.send(*x)
+
+                # Send data to coroutine
+                x_i = coroutine.send(*x)
+
+                # Iterate over coroutine output
                 while x_i is not None:
                     self._out(x_i)
                     try:
-                        x_i = next(corountine)
+                        x_i = next(coroutine)
                     except StopIteration:
-                        corountine = self.functor(**self.init_kwargs)
-                        next(corountine)
+                        # Reset coroutine for next data
+                        coroutine = self.functor(**self.init_kwargs)
+                        next(coroutine)
                         break
 
             # These exceptions are ignored raising WARNING only
