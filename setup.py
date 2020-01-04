@@ -7,7 +7,7 @@ or when doing so would discourage experiment iterations due to prohibitively lon
 """
 
 setup(name='minipipe',
-      version='0.1.7',
+      version='0.1.9',
       description='A machine learning mini-batch pipeline for out-of-memory training',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -15,7 +15,7 @@ setup(name='minipipe',
       author='James D. Pearce',
       author_email='jdp.pearce@gmail.com',
       license='MIT',
-      package_dir  = {'minipipe' : 'src'},
+      #package_dir  = {'minipipe' : 'minipipe'},
       packages=['minipipe'],
       install_requires=[
           'graphviz',

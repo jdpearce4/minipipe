@@ -178,33 +178,33 @@
        "<g id=\"graph0\" class=\"graph\" transform=\"scale(1 1) rotate(0) translate(4 184)\">\n",
        "<title>%3</title>\n",
        "<polygon fill=\"#ffffff\" stroke=\"transparent\" points=\"-4,4 -4,-184 61.1949,-184 61.1949,4 -4,4\"/>\n",
-       "<!-- 4498617400 -->\n",
+       "<!-- 4493112880 -->\n",
        "<g id=\"node1\" class=\"node\">\n",
-       "<title>4498617400</title>\n",
+       "<title>4493112880</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"28.5975\" cy=\"-162\" rx=\"27\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"28.5975\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">load</text>\n",
        "</g>\n",
-       "<!-- 4498650784 -->\n",
+       "<!-- 4493138072 -->\n",
        "<g id=\"node2\" class=\"node\">\n",
-       "<title>4498650784</title>\n",
+       "<title>4493138072</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"28.5975\" cy=\"-90\" rx=\"28.6953\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"28.5975\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">trans</text>\n",
        "</g>\n",
-       "<!-- 4498617400&#45;&gt;4498650784 -->\n",
+       "<!-- 4493112880&#45;&gt;4493138072 -->\n",
        "<g id=\"edge1\" class=\"edge\">\n",
-       "<title>4498617400&#45;&gt;4498650784</title>\n",
+       "<title>4493112880&#45;&gt;4493138072</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M28.5975,-143.8314C28.5975,-136.131 28.5975,-126.9743 28.5975,-118.4166\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"32.0976,-118.4132 28.5975,-108.4133 25.0976,-118.4133 32.0976,-118.4132\"/>\n",
        "</g>\n",
-       "<!-- 4498652184 -->\n",
+       "<!-- 4493139472 -->\n",
        "<g id=\"node3\" class=\"node\">\n",
-       "<title>4498652184</title>\n",
+       "<title>4493139472</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"28.5975\" cy=\"-18\" rx=\"27\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"28.5975\" y=\"-14.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">save</text>\n",
        "</g>\n",
-       "<!-- 4498650784&#45;&gt;4498652184 -->\n",
+       "<!-- 4493138072&#45;&gt;4493139472 -->\n",
        "<g id=\"edge2\" class=\"edge\">\n",
-       "<title>4498650784&#45;&gt;4498652184</title>\n",
+       "<title>4493138072&#45;&gt;4493139472</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M28.5975,-71.8314C28.5975,-64.131 28.5975,-54.9743 28.5975,-46.4166\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"32.0976,-46.4132 28.5975,-36.4133 25.0976,-46.4133 32.0976,-46.4132\"/>\n",
        "</g>\n",
@@ -212,7 +212,7 @@
        "</svg>\n"
       ],
       "text/plain": [
-       "<graphviz.dot.Digraph at 0x10b99e940>"
+       "<graphviz.dot.Digraph at 0x10bc69be0>"
       ]
      },
      "execution_count": 4,
@@ -251,7 +251,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:09,081 - INFO - load - End of stream\n"
+      "2020-01-03 16:39:20,590 - INFO - load - End of stream\n"
      ]
     },
     {
@@ -265,7 +265,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:10,079 - INFO - load - Local termination\n"
+      "2020-01-03 16:39:21,578 - INFO - load - Local termination\n"
      ]
     },
     {
@@ -281,7 +281,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:13,073 - INFO - trans - Local termination\n"
+      "2020-01-03 16:39:24,578 - INFO - trans - Local termination\n"
      ]
     },
     {
@@ -295,7 +295,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:13,577 - INFO - save - Local termination\n"
+      "2020-01-03 16:39:25,083 - INFO - save - Local termination\n"
      ]
     },
     {
@@ -394,51 +394,51 @@
        "<g id=\"graph0\" class=\"graph\" transform=\"scale(1 1) rotate(0) translate(4 184)\">\n",
        "<title>%3</title>\n",
        "<polygon fill=\"#ffffff\" stroke=\"transparent\" points=\"-4,4 -4,-184 172.3933,-184 172.3933,4 -4,4\"/>\n",
-       "<!-- 4498781016 -->\n",
+       "<!-- 4493280592 -->\n",
        "<g id=\"node1\" class=\"node\">\n",
-       "<title>4498781016</title>\n",
+       "<title>4493280592</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"83.6967\" cy=\"-162\" rx=\"27\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"83.6967\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">load</text>\n",
        "</g>\n",
-       "<!-- 4498782360 -->\n",
+       "<!-- 4493281936 -->\n",
        "<g id=\"node2\" class=\"node\">\n",
-       "<title>4498782360</title>\n",
+       "<title>4493281936</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"37.6967\" cy=\"-90\" rx=\"37.8943\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"37.6967\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">trans_0</text>\n",
        "</g>\n",
-       "<!-- 4498781016&#45;&gt;4498782360 -->\n",
+       "<!-- 4493280592&#45;&gt;4493281936 -->\n",
        "<g id=\"edge1\" class=\"edge\">\n",
-       "<title>4498781016&#45;&gt;4498782360</title>\n",
+       "<title>4493280592&#45;&gt;4493281936</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M73.0277,-145.3008C67.5006,-136.6496 60.6246,-125.8873 54.4115,-116.1623\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"57.2829,-114.1558 48.9495,-107.6132 51.384,-117.9245 57.2829,-114.1558\"/>\n",
        "</g>\n",
-       "<!-- 4498783088 -->\n",
+       "<!-- 4493282664 -->\n",
        "<g id=\"node3\" class=\"node\">\n",
-       "<title>4498783088</title>\n",
+       "<title>4493282664</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"130.6967\" cy=\"-90\" rx=\"37.8943\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"130.6967\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">trans_1</text>\n",
        "</g>\n",
-       "<!-- 4498781016&#45;&gt;4498783088 -->\n",
+       "<!-- 4493280592&#45;&gt;4493282664 -->\n",
        "<g id=\"edge2\" class=\"edge\">\n",
-       "<title>4498781016&#45;&gt;4498783088</title>\n",
+       "<title>4493280592&#45;&gt;4493282664</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M94.5975,-145.3008C100.2448,-136.6496 107.2702,-125.8873 113.6185,-116.1623\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"116.6637,-117.9002 119.1992,-107.6132 110.8021,-114.0738 116.6637,-117.9002\"/>\n",
        "</g>\n",
-       "<!-- 4498813168 -->\n",
+       "<!-- 4493304552 -->\n",
        "<g id=\"node4\" class=\"node\">\n",
-       "<title>4498813168</title>\n",
+       "<title>4493304552</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"83.6967\" cy=\"-18\" rx=\"27\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"83.6967\" y=\"-14.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">save</text>\n",
        "</g>\n",
-       "<!-- 4498782360&#45;&gt;4498813168 -->\n",
+       "<!-- 4493281936&#45;&gt;4493304552 -->\n",
        "<g id=\"edge3\" class=\"edge\">\n",
-       "<title>4498782360&#45;&gt;4498813168</title>\n",
+       "<title>4493281936&#45;&gt;4493304552</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M48.832,-72.5708C54.4507,-63.7763 61.3702,-52.9457 67.5598,-43.2577\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"70.5461,-45.0843 72.9806,-34.7729 64.6472,-41.3155 70.5461,-45.0843\"/>\n",
        "</g>\n",
-       "<!-- 4498783088&#45;&gt;4498813168 -->\n",
+       "<!-- 4493282664&#45;&gt;4493304552 -->\n",
        "<g id=\"edge4\" class=\"edge\">\n",
-       "<title>4498783088&#45;&gt;4498813168</title>\n",
+       "<title>4493282664&#45;&gt;4493304552</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M119.3193,-72.5708C113.5784,-63.7763 106.5084,-52.9457 100.1843,-43.2577\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"103.0427,-41.2335 94.6456,-34.7729 97.1811,-45.0599 103.0427,-41.2335\"/>\n",
        "</g>\n",
@@ -446,7 +446,7 @@
        "</svg>\n"
       ],
       "text/plain": [
-       "<graphviz.dot.Digraph at 0x10c2489e8>"
+       "<graphviz.dot.Digraph at 0x10bd06b70>"
       ]
      },
      "execution_count": 7,
@@ -486,75 +486,75 @@
        "<g id=\"graph0\" class=\"graph\" transform=\"scale(1 1) rotate(0) translate(4 328)\">\n",
        "<title>%3</title>\n",
        "<polygon fill=\"#ffffff\" stroke=\"transparent\" points=\"-4,4 -4,-328 172.3933,-328 172.3933,4 -4,4\"/>\n",
-       "<!-- 4498781016 -->\n",
+       "<!-- 4493280592 -->\n",
        "<g id=\"node1\" class=\"node\">\n",
-       "<title>4498781016</title>\n",
+       "<title>4493280592</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"83.6967\" cy=\"-306\" rx=\"27\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"83.6967\" y=\"-302.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">load</text>\n",
        "</g>\n",
-       "<!-- 4498781744 -->\n",
+       "<!-- 4493281320 -->\n",
        "<g id=\"node2\" class=\"node\">\n",
-       "<title>4498781744</title>\n",
+       "<title>4493281320</title>\n",
        "<polygon fill=\"none\" stroke=\"#000000\" points=\"117.6967,-252 49.6967,-252 49.6967,-216 117.6967,-216 117.6967,-252\"/>\n",
        "<text text-anchor=\"middle\" x=\"83.6967\" y=\"-230.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">stream_0</text>\n",
        "</g>\n",
-       "<!-- 4498781016&#45;&gt;4498781744 -->\n",
+       "<!-- 4493280592&#45;&gt;4493281320 -->\n",
        "<g id=\"edge1\" class=\"edge\">\n",
-       "<title>4498781016&#45;&gt;4498781744</title>\n",
+       "<title>4493280592&#45;&gt;4493281320</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M83.6967,-287.8314C83.6967,-280.131 83.6967,-270.9743 83.6967,-262.4166\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"87.1968,-262.4132 83.6967,-252.4133 80.1968,-262.4133 87.1968,-262.4132\"/>\n",
        "</g>\n",
-       "<!-- 4498782360 -->\n",
+       "<!-- 4493281936 -->\n",
        "<g id=\"node3\" class=\"node\">\n",
-       "<title>4498782360</title>\n",
+       "<title>4493281936</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"37.6967\" cy=\"-162\" rx=\"37.8943\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"37.6967\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">trans_0</text>\n",
        "</g>\n",
-       "<!-- 4498781744&#45;&gt;4498782360 -->\n",
+       "<!-- 4493281320&#45;&gt;4493281936 -->\n",
        "<g id=\"edge2\" class=\"edge\">\n",
-       "<title>4498781744&#45;&gt;4498782360</title>\n",
+       "<title>4493281320&#45;&gt;4493281936</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M72.0889,-215.8314C66.6835,-207.3707 60.1549,-197.1521 54.2447,-187.9014\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"57.158,-185.9603 48.8246,-179.4177 51.2591,-189.7291 57.158,-185.9603\"/>\n",
        "</g>\n",
-       "<!-- 4498783088 -->\n",
+       "<!-- 4493282664 -->\n",
        "<g id=\"node4\" class=\"node\">\n",
-       "<title>4498783088</title>\n",
+       "<title>4493282664</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"130.6967\" cy=\"-162\" rx=\"37.8943\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"130.6967\" y=\"-158.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">trans_1</text>\n",
        "</g>\n",
-       "<!-- 4498781744&#45;&gt;4498783088 -->\n",
+       "<!-- 4493281320&#45;&gt;4493282664 -->\n",
        "<g id=\"edge3\" class=\"edge\">\n",
-       "<title>4498781744&#45;&gt;4498783088</title>\n",
+       "<title>4493281320&#45;&gt;4493282664</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M95.5567,-215.8314C101.0797,-207.3707 107.7502,-197.1521 113.7888,-187.9014\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"116.7913,-189.7047 119.3268,-179.4177 110.9297,-185.8783 116.7913,-189.7047\"/>\n",
        "</g>\n",
-       "<!-- 4498783816 -->\n",
+       "<!-- 4493303936 -->\n",
        "<g id=\"node5\" class=\"node\">\n",
-       "<title>4498783816</title>\n",
+       "<title>4493303936</title>\n",
        "<polygon fill=\"none\" stroke=\"#000000\" points=\"117.6967,-108 49.6967,-108 49.6967,-72 117.6967,-72 117.6967,-108\"/>\n",
        "<text text-anchor=\"middle\" x=\"83.6967\" y=\"-86.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">stream_1</text>\n",
        "</g>\n",
-       "<!-- 4498782360&#45;&gt;4498783816 -->\n",
+       "<!-- 4493281936&#45;&gt;4493303936 -->\n",
        "<g id=\"edge4\" class=\"edge\">\n",
-       "<title>4498782360&#45;&gt;4498783816</title>\n",
+       "<title>4493281936&#45;&gt;4493303936</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M48.832,-144.5708C54.1918,-136.1815 60.7355,-125.9392 66.7,-116.6035\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"69.749,-118.3319 72.1835,-108.0206 63.8501,-114.5632 69.749,-118.3319\"/>\n",
        "</g>\n",
-       "<!-- 4498783088&#45;&gt;4498783816 -->\n",
+       "<!-- 4493282664&#45;&gt;4493303936 -->\n",
        "<g id=\"edge6\" class=\"edge\">\n",
-       "<title>4498783088&#45;&gt;4498783816</title>\n",
+       "<title>4493282664&#45;&gt;4493303936</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M119.3193,-144.5708C113.8429,-136.1815 107.157,-125.9392 101.0628,-116.6035\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"103.8572,-114.4812 95.4601,-108.0206 97.9955,-118.3076 103.8572,-114.4812\"/>\n",
        "</g>\n",
-       "<!-- 4498813168 -->\n",
+       "<!-- 4493304552 -->\n",
        "<g id=\"node6\" class=\"node\">\n",
-       "<title>4498813168</title>\n",
+       "<title>4493304552</title>\n",
        "<ellipse fill=\"none\" stroke=\"#000000\" cx=\"83.6967\" cy=\"-18\" rx=\"27\" ry=\"18\"/>\n",
        "<text text-anchor=\"middle\" x=\"83.6967\" y=\"-14.3\" font-family=\"Times,serif\" font-size=\"14.00\" fill=\"#000000\">save</text>\n",
        "</g>\n",
-       "<!-- 4498783816&#45;&gt;4498813168 -->\n",
+       "<!-- 4493303936&#45;&gt;4493304552 -->\n",
        "<g id=\"edge5\" class=\"edge\">\n",
-       "<title>4498783816&#45;&gt;4498813168</title>\n",
+       "<title>4493303936&#45;&gt;4493304552</title>\n",
        "<path fill=\"none\" stroke=\"#000000\" d=\"M83.6967,-71.8314C83.6967,-64.131 83.6967,-54.9743 83.6967,-46.4166\"/>\n",
        "<polygon fill=\"#000000\" stroke=\"#000000\" points=\"87.1968,-46.4132 83.6967,-36.4133 80.1968,-46.4133 87.1968,-46.4132\"/>\n",
        "</g>\n",
@@ -562,7 +562,7 @@
        "</svg>\n"
       ],
       "text/plain": [
-       "<graphviz.dot.Digraph at 0x10c248a20>"
+       "<graphviz.dot.Digraph at 0x10bd06a20>"
       ]
      },
      "execution_count": 8,
@@ -606,8 +606,8 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:19,650 - INFO - load - End of stream\n",
-      "2020-01-03 14:12:19,657 - INFO - load - Local termination\n"
+      "2020-01-03 16:39:31,164 - INFO - load - End of stream\n",
+      "2020-01-03 16:39:31,171 - INFO - load - Local termination\n"
      ]
     },
     {
@@ -621,7 +621,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:20,151 - INFO - trans_0 - Local termination\n"
+      "2020-01-03 16:39:31,665 - INFO - trans_0 - Local termination\n"
      ]
     },
     {
@@ -635,7 +635,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:20,657 - INFO - trans_1 - Local termination\n"
+      "2020-01-03 16:39:32,166 - INFO - trans_1 - Local termination\n"
      ]
     },
     {
@@ -650,14 +650,14 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2020-01-03 14:12:21,194 - INFO - save - Local termination\n"
+      "2020-01-03 16:39:32,711 - INFO - save - Local termination\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "6.57 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)\n"
+      "6.58 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)\n"
      ]
     }
    ],
