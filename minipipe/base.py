@@ -1,6 +1,6 @@
 """Base classes"""
 
-from multiprocessing import Queue, Event
+from multiprocessing import Queue, Event, SimpleQueue
 from queue import Empty, Full
 import logging
 
@@ -54,7 +54,7 @@ class Logger(object):
             Logs messages.
 
             :param msg: message to log
-            :param name: name of object invoking logs
+            :param name: name of logger
             :param lvl: log level, one of: info, debug, warning, error or critical
             :return: None
         """
@@ -76,10 +76,24 @@ class Stream(object):
 
     """
         Based off of a multiprocessing queue, Stream handles moving data between Pipe segments.
+
+        :param name: String, name of Stream
+        :param buffer_size: Int, max size of queue. Will be ignored if queue_type = "multiprocessing.SimpleQueue"
+        :param timeout: Int, timeout(s) value for Queue.put and Queue.get methods
+        :param monitor: Bool, log stream I/O times
+        :queue_type: String, multiprocesses queue type to be used.
+            Valid types: 'multiprocessing.Queue', 'multiprocessing.SimpleQueue'
+        :return: None
     """
 
-    def __init__(self, name = 'stream', buffer_size=3, timeout=None, monitor=False):
-        self.q = Queue(buffer_size)
+    def __init__(self, name = 'stream', buffer_size=3, timeout=None, monitor=False, queue_type='multiprocessing.Queue'):
+        assert (queue_type.lower() in ('multiprocessing.queue', 'multiprocessing.simplequeue')), "Error: invalid queue type"
+
+        if queue_type.lower() == 'multiprocessing.simplequeue':
+            self.q = SimpleQueue()
+        else:
+            self.q = Queue(buffer_size)
+
         self.timeout = timeout
         self.buffer_size = buffer_size
         self.name = name
@@ -131,9 +145,9 @@ class Stream(object):
         while (any([p._continue() for p in self.pipes_out]) or not self.q.empty()):
             try:
                 x = self.q.get(timeout=timeout or self.timeout)
+                #x = self.q.get()
                 if self.monitor:
-                    self.logger.log('capacity:{:0.2f}%'.format(self.capacity()),
-                                    self.name+':get')
+                    self.logger.log('capacity:{:0.2f}%'.format(self.capacity()), self.name+':get')
                 break
             except Empty:
                 continue
@@ -150,9 +164,9 @@ class Stream(object):
                 if x is None:
                     break
                 self.q.put(x, timeout=timeout or self.timeout)
+                #self.q.put(x)
                 if self.monitor:
-                    self.logger.log('capacity:{:0.2f}%'.format(self.capacity()),
-                                    self.name+':put')
+                    self.logger.log('capacity:{:0.2f}%'.format(self.capacity()), self.name+':put')
                 break
             except Full:
                 continue

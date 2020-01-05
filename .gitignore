@@ -1,14 +1,23 @@
 # Compiled python modules.
 *.pyc
 
+# Hidden folders and files
+*.
+
+# Jupyter checkpoints
+*_checkpoints
+
 # Setuptools distribution folder.
+dist/
 /dist/
 
 # Python egg metadata, regenerated from source files by setuptools.
+*.egg-info
 /*.egg-info
+
 
 # Jupyter notebook checkpoints
 source/examples/.ipynb_checkpoints
 
 # idea
-/.idea
+.idea

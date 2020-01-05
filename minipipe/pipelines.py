@@ -45,15 +45,15 @@ class PipeSystem(object):
             # Create Pipe segments with up/downstreams
             # Order is not important
             pipes = [
-                Pipe(genRand, 'source1', downstreams=[s1], func_type='generator'),
-                Pipe(genRand, 'source2', downstreams=[s1], func_type='generator'),
-                Pipe(batch, 'batcher', upstreams=[s1], downstreams=[s2], func_type='coroutine'),
-                Pipe(sumBatch, 'sum', upstreams=[s2], downstreams=[s3]),
-                Pipe(sumBatch, 'sum', upstreams=[s2], downstreams=[s3]),
-                Pipe(sumBatch, 'sum', upstreams=[s2], downstreams=[s3]),
-                Pipe(split, 'split', upstreams=[s2], downstreams=[s4, s5]),
-                Pipe(output_gt_1, 'print_gt_1', upstreams=[s4]),
-                Pipe(output_lt_1, 'print_lt_1', upstreams=[s5]),
+                Source(genRand, 'source1', downstreams=[s1]),
+                Source(genRand, 'source2', downstreams=[s1]),
+                Regulator(batch, 'batcher', upstreams=[s1], downstreams=[s2]),
+                Transform(sumBatch, 'sum', upstreams=[s2], downstreams=[s3]),
+                Transform(sumBatch, 'sum', upstreams=[s2], downstreams=[s3]),
+                Transform(sumBatch, 'sum', upstreams=[s2], downstreams=[s3]),
+                Transform(split, 'split', upstreams=[s2], downstreams=[s4, s5]),
+                Sink(output_gt_1, 'print_gt_1', upstreams=[s4]),
+                Sink(output_lt_1, 'print_lt_1', upstreams=[s5]),
             ]
 
             # Build pipesystem
@@ -64,6 +64,9 @@ class PipeSystem(object):
             psys.run()
             psys.close()
 
+        :param name: List[Pipes], List of Pipes with their upstreams/downstreams
+        :return: None
+
     """
 
     def __init__(self, pipes):
@@ -73,7 +76,13 @@ class PipeSystem(object):
         self.built = False
 
     def build(self, log_lvl='INFO', monitor=False, ignore_exceptions=None):
-        """Connects pipe segments together and builds graph."""
+        """Connects pipe segments together and builds graph.
+
+        :param name: String, log level, one of: info, debug, warning, error or critical
+        :param monitor: Bool, log stream I/O times
+        :param ignore_exceptions: List of exceptions to ignore while pipeline is running
+        :return: None
+        """
 
         self.log_lvl = log_lvl
         self.monitor = monitor
@@ -94,8 +103,6 @@ class PipeSystem(object):
             if self.ignore_exceptions is not None:
                 p.ignore_exceptions = self.ignore_exceptions
             p.set_global_term_flag(self.global_term)
-            #self._connect_upstreams(p)
-            #self._connect_downstreams(p)
             self._connect_streams(p)
 
         # For each pipe count all upstreams and downstreams.
@@ -139,18 +146,6 @@ class PipeSystem(object):
         self.processes = [Process(target=p.run_pipe, args=[p.name], name=p.name)
                           for p in self.pipes]
 
-    #def _connect_downstreams(self, p):
-    #    for stream in p.get_downstreams():
-    #        stream.add_pipe_out(p)
-            #for p_in in stream.pipes_in:
-            #    p_in._n_ances += 1
-
-    #def _connect_upstreams(self, p):
-    #    for stream in p.get_upstreams():
-    #        stream.add_pipe_in(p)
-            #for p_out in stream.pipes_out:
-            #    p_out._n_desc += 1
-
     def _connect_streams(self, p):
         for stream in p.get_downstreams():
             stream.add_pipe_out(p)
@@ -167,7 +162,11 @@ class PipeSystem(object):
 
 
     def diagram(self, draw_streams=False):
-        """Draws a graph diagram of pipeline."""
+        """Draws a graph diagram of pipeline.
+
+           :params draw_streams: Bool, if True Streams will be included in graph diagram
+           :return: graphviz Digraph object
+        """
 
         assert(self.built==True), "ERROR: PipeSystem must be built first"
         g = Digraph()
@@ -223,10 +222,10 @@ class PipeLine(PipeSystem):
 
             # Define pipeline
             pline = PipeLine()
-            pline.add(Pipe(genRand, 'source1', func_type='generator'))
-            pline.add(Pipe(batch, 'batcher', func_type='coroutine'), buffer_size = 10)
-            pline.add(Pipe(sumBatch, 'sum'), n_processes = 3)
-            pline.add(Pipe(print_out, 'print'))
+            pline.add(Source(genRand, 'source'))
+            pline.add(Regulator(batch, 'batcher'), buffer_size = 10)
+            pline.add(Transform(sumBatch, 'sum'), n_processes = 3)
+            pline.add(Sink(print_out, 'print'))
 
             # Build pipeline
             pline.build()
@@ -235,10 +234,16 @@ class PipeLine(PipeSystem):
             pline.run()
             pline.close()
 
+
+        :param monitor: Bool, log stream I/O times
+        :queue_type: String, multiprocesses queue type to be used. Valid types: 'multiprocessing.Queue', 'multiprocessing.SimpleQueue'
+        :return: None
+
     """
 
-    def __init__(self, monitor=False):
+    def __init__(self, monitor=False, queue_type='multiprocessing.Queue'):
         self.monitor = monitor
+        self.queue_type = queue_type
         self.segments = []
         self.pipes = []
         self.sid = 0
@@ -259,7 +264,8 @@ class PipeLine(PipeSystem):
         if len(self.segments) > 0:
             s = Stream(buffer_size=buffer_size,
                        name = 'stream_{}'.format(self.sid),
-                       monitor=self.monitor)
+                       monitor=self.monitor,
+                       queue_type=self.queue_type)
             self.sid += 1
             for seg in self.segments[-1]:
                 seg.set_downstreams([s])
