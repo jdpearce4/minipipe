@@ -15,9 +15,5 @@ dist/
 *.egg-info
 /*.egg-info
 
-
-# Jupyter notebook checkpoints
-source/examples/.ipynb_checkpoints
-
 # idea
 .idea

@@ -1,0 +1,1506 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Model Training Pipeline with Keras &mdash; minipipe 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Base Classes" href="../base.html" />
+    <link rel="prev" title="Stateful Functors" href="stateful_functors.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> minipipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="toy_example.html">Introduction to PipeLine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="into_pipesys.html">Introduction to PipeSystems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateful_functors.html">Stateful Functors</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Model Training Pipeline with Keras</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Simple-Pipeline">Simple Pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Evaluation-while-Training">Evaluation while Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Training-with-Multiple-Models-(Single-GPU).">Training with Multiple Models (Single GPU).</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Time-Comparisons">Time Comparisons</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../base.html">Base Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipes.html">Pipes Segment Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipelines.html">Pipeline Classes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">minipipe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Model Training Pipeline with Keras</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/keras_training.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Model-Training-Pipeline-with-Keras">
+<h1>Model Training Pipeline with Keras<a class="headerlink" href="#Model-Training-Pipeline-with-Keras" title="Permalink to this headline">¶</a></h1>
+<p>Here we show how to build pipelines to train a Keras (Tensorflow backend) models with a GPU.</p>
+<div class="section" id="Simple-Pipeline">
+<h2>Simple Pipeline<a class="headerlink" href="#Simple-Pipeline" title="Permalink to this headline">¶</a></h2>
+<p>First we’ll look at a simple pipeline with only two pipe segments, a loader and trainer, useful for training with large data sets that can’t fit in memory. We’ll first write a generator function that generates fake data. Of course in real applications this function would read data from disk or S3 etc.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Generate fake data</span>
+<span class="c1"># Each iteration emulates a file loaded from disk</span>
+<span class="k">def</span> <span class="nf">gen_fake_data</span><span class="p">(</span><span class="n">n_files</span><span class="p">,</span> <span class="n">rows_per_file</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_files</span><span class="p">):</span>
+
+        <span class="c1"># Generate random features drawn from a standard normal distribution</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">rows_per_file</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">)</span>
+
+        <span class="c1"># Generate binary targets as a non-trivial function of features</span>
+        <span class="n">maximum</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="c1"># Max of all features less 2 sigma</span>
+        <span class="n">interactions</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Pairwise interaction of mirror columns</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">eps</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">rows_per_file</span><span class="p">)</span> <span class="c1"># small amount of random noise</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">maximum</span> <span class="o">+</span> <span class="n">interactions</span> <span class="o">+</span> <span class="n">noise</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Usually we’d want to do some preprocessing on our data to make sure it’s properly normalized etc. However, since all the features are sampled from a standard normal we don’t have to worry about that here.</p>
+<p>Now we can define the trainer functor. We’ll want to save the model once the pipeline is finished running so we’ll use a class functor with a <code class="docutils literal notranslate"><span class="pre">local_term</span></code> method. Typically When using a GPU you will need to define the model on the local/child process. So lets also create a function to build our keras model and run in it <code class="docutils literal notranslate"><span class="pre">local_init</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="kn">import</span> <span class="n">Sequential</span>
+<span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Dense</span>
+
+<span class="c1">#suppress tf warnings</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">set_verbosity</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">hidden_arch</span><span class="p">):</span>
+
+    <span class="c1"># Ask Tensorflow to use only as much GPU memory as needed</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">()</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="c1"># Build model on local process</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+    <span class="n">first_layer_output</span> <span class="o">=</span> <span class="n">hidden_arch</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">first_layer_output</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,),</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">output_size</span> <span class="ow">in</span> <span class="n">hidden_arch</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Return complied model</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span>
+                  <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span>
+                  <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+
+<span class="c1"># Keras Trainer class</span>
+<span class="c1"># This class will train a model via keras&#39; model.fit</span>
+<span class="k">class</span> <span class="nc">train_keras</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_arch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">save_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_name</span> <span class="o">=</span> <span class="n">save_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_arch</span> <span class="o">=</span> <span class="n">hidden_arch</span>
+
+    <span class="k">def</span> <span class="nf">local_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_arch</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model Summary&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">local_term</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving model to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_name</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We set the session config and build the model in <code class="docutils literal notranslate"><span class="pre">local_init</span></code> so that the graph is built on the local process and not the main process, since Keras is not thread safe. Additionally we save the model in <code class="docutils literal notranslate"><span class="pre">local_term</span></code> so the model is not lost once the pipe segment and process is terminated. However, <code class="docutils literal notranslate"><span class="pre">__init__</span></code> should be run on the main process before you start the pipeline.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">minipipe</span> <span class="k">as</span> <span class="nn">mp</span>
+
+<span class="c1"># Init generator (optional) and class functors</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">gen_fake_data</span><span class="p">(</span><span class="n">n_files</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">rows_per_file</span><span class="o">=</span><span class="mi">32</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">train_keras</span><span class="p">(</span><span class="n">hidden_arch</span> <span class="o">=</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span>
+                     <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                     <span class="n">save_name</span><span class="o">=</span><span class="s1">&#39;keras_model.hdf5&#39;</span><span class="p">)</span>
+
+<span class="c1"># Build and display pipeline</span>
+<span class="n">pline</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">PipeLine</span><span class="p">()</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;loader&#39;</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Sink</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;trainer&#39;</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">log_lvl</span><span class="o">=</span><span class="s1">&#39;ERROR&#39;</span><span class="p">)</span> <span class="c1"># Suppress stream info</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">diagram</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_keras_training_8_0.svg" src="../_images/examples_keras_training_8_0.svg" /></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#run pipeline</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Model Summary
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+dense_1 (Dense)              (None, 64)                2112
+_________________________________________________________________
+dense_2 (Dense)              (None, 16)                1040
+_________________________________________________________________
+dense_3 (Dense)              (None, 1)                 17
+=================================================================
+Total params: 3,169
+Trainable params: 3,169
+Non-trainable params: 0
+_________________________________________________________________
+
+Epoch 1/1
+32000/32000 [==============================] - 5s 160us/step - loss: 0.6404 - acc: 0.6250
+Epoch 1/1
+32000/32000 [==============================] - 4s 140us/step - loss: 0.5779 - acc: 0.6926
+Epoch 1/1
+32000/32000 [==============================] - 4s 139us/step - loss: 0.5367 - acc: 0.7255
+Epoch 1/1
+32000/32000 [==============================] - 5s 142us/step - loss: 0.5221 - acc: 0.7346
+Epoch 1/1
+32000/32000 [==============================] - 4s 139us/step - loss: 0.5155 - acc: 0.7386
+Epoch 1/1
+32000/32000 [==============================] - 4s 139us/step - loss: 0.5133 - acc: 0.7426
+Epoch 1/1
+32000/32000 [==============================] - 4s 139us/step - loss: 0.5103 - acc: 0.7427
+Epoch 1/1
+32000/32000 [==============================] - 4s 139us/step - loss: 0.5092 - acc: 0.7459
+Epoch 1/1
+32000/32000 [==============================] - 4s 139us/step - loss: 0.5020 - acc: 0.7482
+Epoch 1/1
+32000/32000 [==============================] - 4s 140us/step - loss: 0.5083 - acc: 0.7438
+Saving model to keras_model.hdf5
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Evaluation-while-Training">
+<h2>Evaluation while Training<a class="headerlink" href="#Evaluation-while-Training" title="Permalink to this headline">¶</a></h2>
+<p>Keras can track some metrics during training, such as log loss and accuracy. However, these metrics are all calulated on the training set. Furthermore, more sophisticated metrics such as AUC cannot be calcualted during training with Keras. In this section we’ll show how you can perform evalution of AUC on a test/validaton set in parallel with training.</p>
+<p>The easiest way to do this is to persist a model at each step in <code class="docutils literal notranslate"><span class="pre">train_keras</span></code> and have a downstream pipe segment load that model and perform evaluation. We’ll have to modify our <code class="docutils literal notranslate"><span class="pre">train_keras</span></code> class so it can be used as a transform and define a evalution sink.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">keras.models</span> <span class="kn">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_auc_score</span> <span class="k">as</span> <span class="n">auc</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="c1"># Keras Trainer class</span>
+<span class="c1"># This class will train a model via keras&#39; model.fit</span>
+<span class="k">class</span> <span class="nc">train_keras</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_arch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">save_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_name</span> <span class="o">=</span> <span class="n">save_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_arch</span> <span class="o">=</span> <span class="n">hidden_arch</span>
+
+    <span class="k">def</span> <span class="nf">local_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_arch</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># Suppress progress bar</span>
+
+        <span class="c1"># Since eval_keras loads this file it may be locked if eval_keras is reading it</span>
+        <span class="c1"># Wait and try again later</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_name</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+        <span class="c1"># The only purpose of this output is to tell eval_keras when to execute</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<span class="k">class</span> <span class="nc">eval_keras</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_test</span> <span class="o">=</span> <span class="n">X_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span>
+
+    <span class="k">def</span> <span class="nf">local_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aucs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Ask Tensorflow to use only as much GPU memory as needed</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="c1"># Load model from disk and get predictions from test set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># Suppress progress bar</span>
+
+        <span class="c1"># Calculate AUC and print results</span>
+        <span class="n">test_auc</span> <span class="o">=</span> <span class="n">auc</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Epoch </span><span class="si">{0}</span><span class="s1">: AUC = </span><span class="si">{1:0.4f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="p">,</span> <span class="n">test_auc</span><span class="p">))</span>
+
+        <span class="c1"># Advance epoch and save test_auc for plotting later</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aucs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_auc</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">local_term</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Plots AUC as a function of step after pipeline has completed</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">aucs</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;AUC&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;AUC&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>We’ve suppressed the Keras training and prediction progress bars with <code class="docutils literal notranslate"><span class="pre">verbose=0</span></code>. Otherwise our print outs can get jumbled with them, makeing the output hard to read. Now we can build a pipeline with our three pipe segments: load, train, eval.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Init generator (optional) and class functors</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">gen_fake_data</span><span class="p">(</span><span class="n">n_files</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">rows_per_file</span><span class="o">=</span><span class="mi">32</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">train_keras</span><span class="p">(</span><span class="n">hidden_arch</span> <span class="o">=</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span>
+                     <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                     <span class="n">save_name</span><span class="o">=</span><span class="s1">&#39;keras_model.hdf5&#39;</span><span class="p">)</span>
+
+<span class="c1"># Generate a test set for the evaluator to use</span>
+<span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">gen_fake_data</span><span class="p">(</span><span class="n">n_files</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rows_per_file</span><span class="o">=</span><span class="mi">32</span><span class="o">*</span><span class="mi">1000</span><span class="p">))</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">eval_keras</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;keras_model.hdf5&#39;</span><span class="p">)</span>
+
+<span class="c1"># Build and display pipeline</span>
+<span class="n">pline2</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">PipeLine</span><span class="p">()</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;loader&#39;</span><span class="p">))</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Transform</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;trianer&#39;</span><span class="p">))</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Sink</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;evaluator&#39;</span><span class="p">))</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">log_lvl</span><span class="o">=</span><span class="s1">&#39;ERROR&#39;</span><span class="p">)</span> <span class="c1"># Suppress stream info</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">diagram</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_keras_training_14_0.svg" src="../_images/examples_keras_training_14_0.svg" /></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#run pipeline</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Epoch 0: AUC = 0.7290
+Epoch 1: AUC = 0.7969
+Epoch 2: AUC = 0.8134
+Epoch 3: AUC = 0.8164
+Epoch 4: AUC = 0.8224
+Epoch 5: AUC = 0.8242
+Epoch 6: AUC = 0.8266
+Epoch 7: AUC = 0.8288
+Epoch 8: AUC = 0.8341
+Epoch 9: AUC = 0.8345
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_keras_training_15_1.png" src="../_images/examples_keras_training_15_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Training-with-Multiple-Models-(Single-GPU).">
+<h2>Training with Multiple Models (Single GPU).<a class="headerlink" href="#Training-with-Multiple-Models-(Single-GPU)." title="Permalink to this headline">¶</a></h2>
+<p>Now that we have our basic pipeline working we’ll probably want to experiment with other architectures. We could try each architecture one-by-one, but if we’re working with large data sets this may be prohibitively time consuming. However, with MiniPipe’s PipeSystem API we can train and test them all in parallel. We’re only restricted by the memory of our GPU and number of physical CPU cores.</p>
+<p>We’ll try training four models in parallel. We’ll have to make some modifications to our functors. First <code class="docutils literal notranslate"><span class="pre">gen_fake_data</span></code> needs to return four copies of the data, one for each trainer. Second <code class="docutils literal notranslate"><span class="pre">eval_keras</span></code> needs to be a transform, passing the evaluations results (AUCs) to a pipe segment that accumulates them and plots at termination.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="k">def</span> <span class="nf">gen_fake_data</span><span class="p">(</span><span class="n">n_files</span><span class="p">,</span> <span class="n">rows_per_file</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_files</span><span class="p">):</span>
+
+        <span class="c1"># Generate random features drawn from a standard normal distribution</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">rows_per_file</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">)</span>
+
+        <span class="c1"># Generate binary targets as a non-trivial function of features</span>
+        <span class="n">maximum</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="c1"># Max of all features less 2 sigma</span>
+        <span class="n">interactions</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Pairwise interaction of mirror columns</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">eps</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">rows_per_file</span><span class="p">)</span> <span class="c1"># small amount of random noise</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">maximum</span> <span class="o">+</span> <span class="n">interactions</span> <span class="o">+</span> <span class="n">noise</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="c1"># Output 4 copies of the data</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">eval_keras</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_test</span> <span class="o">=</span> <span class="n">X_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">local_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Ask Tensorflow to use only as much GPU memory as needed</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">test_auc</span> <span class="o">=</span> <span class="n">auc</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">{0}</span><span class="s1">]Epoch </span><span class="si">{1}</span><span class="s1">: AUC = </span><span class="si">{2:0.4f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="p">,</span> <span class="n">test_auc</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">test_auc</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">plot_aucs</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">local_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auc_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_auc_tuple</span><span class="p">):</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">test_auc</span> <span class="o">=</span> <span class="n">name_auc_tuple</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auc_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_auc</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">local_term</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">aucs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">auc_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aucs</span><span class="p">)),</span> <span class="n">aucs</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;AUC&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Model Architecture Search&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Since this pipeline will have multiple branches we’ll need to use the PipeSystem API. In the PipeSystem API we need to define all the Streams explicitly. We’ll use a dictionary to store all the model architectures and names. If we want to add more models we can simply expand this dictionary.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Init generator (optional) and class functors</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">gen_fake_data</span><span class="p">(</span><span class="n">n_files</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">rows_per_file</span><span class="o">=</span><span class="mi">32</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Define hidden architectures</span>
+<span class="n">archs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;keras-16&#39;</span><span class="p">:[</span><span class="mi">16</span><span class="p">],</span>
+         <span class="s1">&#39;keras-32-16&#39;</span><span class="p">:[</span><span class="mi">32</span><span class="p">,</span><span class="mi">16</span><span class="p">],</span>
+         <span class="s1">&#39;keras-64-32-16&#39;</span><span class="p">:[</span><span class="mi">64</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">16</span><span class="p">],</span>
+         <span class="s1">&#39;keras-128-64-32-16&#39;</span><span class="p">:[</span><span class="mi">128</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">16</span><span class="p">]}</span>
+
+<span class="c1"># Define trainer fuctors</span>
+<span class="n">trainers</span> <span class="o">=</span> <span class="p">[</span><span class="n">train_keras</span><span class="p">(</span><span class="n">hidden_arch</span><span class="o">=</span><span class="n">arch</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;.hdf5&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arch</span> <span class="ow">in</span> <span class="n">archs</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+<span class="c1"># Generate one set of test data</span>
+<span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">gen_fake_data</span><span class="p">(</span><span class="n">n_files</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rows_per_file</span><span class="o">=</span><span class="mi">32</span><span class="o">*</span><span class="mi">1000</span><span class="p">))</span>
+
+<span class="c1"># Define evaluator functors with same test set</span>
+<span class="n">evaluators</span> <span class="o">=</span> <span class="p">[</span><span class="n">eval_keras</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;.hdf5&#39;</span><span class="p">)</span>
+              <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">archs</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+
+<span class="c1"># Define Streams</span>
+<span class="n">train_streams</span> <span class="o">=</span> <span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">Stream</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">archs</span><span class="p">))]</span>
+<span class="n">eval_streams</span> <span class="o">=</span> <span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">Stream</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">archs</span><span class="p">))]</span>
+<span class="n">s_plt</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Stream</span><span class="p">()</span>
+
+<span class="c1"># Define pipe segments (order does not matter)</span>
+<span class="n">pipes</span> <span class="o">=</span> <span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">downstreams</span><span class="o">=</span><span class="n">train_streams</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Loader&#39;</span><span class="p">)]</span>
+
+<span class="n">pipes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">Transform</span><span class="p">(</span><span class="n">trnr</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s_tr</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s_evl</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Train</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">trnr</span><span class="p">,</span> <span class="n">s_tr</span><span class="p">,</span> <span class="n">s_evl</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">trainers</span><span class="p">,</span> <span class="n">train_streams</span><span class="p">,</span> <span class="n">eval_streams</span><span class="p">))]</span>
+
+<span class="n">pipes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">Transform</span><span class="p">(</span><span class="n">evlr</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s_evl</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s_plt</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Eval</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+         <span class="k">for</span> <span class="n">i</span> <span class="p">,</span> <span class="p">(</span><span class="n">evlr</span><span class="p">,</span> <span class="n">s_evl</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">evaluators</span><span class="p">,</span> <span class="n">eval_streams</span><span class="p">))]</span>
+
+<span class="n">pipes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">Sink</span><span class="p">(</span><span class="n">plot_aucs</span><span class="p">(),</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s_plt</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Plot&#39;</span><span class="p">)]</span>
+
+</pre></div>
+</div>
+</div>
+<p>Now when we build the pipeline we just need to supply <code class="docutils literal notranslate"><span class="pre">PipeSystem</span></code> with a list of pipe segments.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Build and display pipe system</span>
+<span class="n">psys</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">PipeSystem</span><span class="p">(</span><span class="n">pipes</span><span class="p">)</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">diagram</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_keras_training_22_0.svg" src="../_images/examples_keras_training_22_0.svg" /></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">psys</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-16]Epoch 0: AUC = 0.6793
+[keras-32-16]Epoch 0: AUC = 0.6928
+[keras-64-32-16]Epoch 0: AUC = 0.7498
+[keras-128-64-32-16]Epoch 0: AUC = 0.7930
+[keras-16]Epoch 1: AUC = 0.7054
+[keras-32-16]Epoch 1: AUC = 0.7475
+[keras-64-32-16]Epoch 1: AUC = 0.8080
+[keras-16]Epoch 2: AUC = 0.7244
+[keras-128-64-32-16]Epoch 1: AUC = 0.8192
+[keras-32-16]Epoch 2: AUC = 0.7843
+[keras-64-32-16]Epoch 2: AUC = 0.8212
+[keras-16]Epoch 3: AUC = 0.7391
+[keras-128-64-32-16]Epoch 2: AUC = 0.8272
+[keras-32-16]Epoch 3: AUC = 0.8035
+[keras-16]Epoch 4: AUC = 0.7470
+[keras-64-32-16]Epoch 3: AUC = 0.8234
+[keras-32-16]Epoch 4: AUC = 0.8136
+[keras-128-64-32-16]Epoch 3: AUC = 0.8311
+[keras-16]Epoch 5: AUC = 0.7526
+[keras-64-32-16]Epoch 4: AUC = 0.8287
+[keras-32-16]Epoch 5: AUC = 0.8181
+[keras-16]Epoch 6: AUC = 0.7561
+[keras-128-64-32-16]Epoch 4: AUC = 0.8388
+[keras-64-32-16]Epoch 5: AUC = 0.8301
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:00,984 - INFO - Loader - End of stream
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-32-16]Epoch 6: AUC = 0.8201
+[keras-16]Epoch 7: AUC = 0.7563
+[keras-128-64-32-16]Epoch 5: AUC = 0.8475
+[keras-64-32-16]Epoch 6: AUC = 0.8338
+[keras-16]Epoch 8: AUC = 0.7567
+[keras-32-16]Epoch 7: AUC = 0.8187
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:06,157 - INFO - Train0 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 6: AUC = 0.8554
+[keras-16]Epoch 9: AUC = 0.7599
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:08,238 - INFO - Eval0 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-64-32-16]Epoch 7: AUC = 0.8341
+[keras-32-16]Epoch 8: AUC = 0.8205
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:10,113 - INFO - Train1 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 7: AUC = 0.8612
+[keras-32-16]Epoch 9: AUC = 0.8253
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:12,503 - INFO - Eval1 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-64-32-16]Epoch 8: AUC = 0.8360
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:14,155 - INFO - Train2 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-64-32-16]Epoch 9: AUC = 0.8445
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:16,512 - INFO - Eval2 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 8: AUC = 0.8671
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:19,034 - INFO - Train3 - Local termination
+2020-01-05 20:01:19,034 - INFO - Loader - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 9: AUC = 0.8822
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:01:21,564 - INFO - Eval3 - Local termination
+2020-01-05 20:01:21,565 - INFO - Plot - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_keras_training_23_18.png" src="../_images/examples_keras_training_23_18.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Time-Comparisons">
+<h2>Time Comparisons<a class="headerlink" href="#Time-Comparisons" title="Permalink to this headline">¶</a></h2>
+<p>Now lets do a time comparison between our three different pipelines. Pipelines need to be reset before they can be run again.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pline</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>We’ll use Jupyter’s %%timeit magic cell to time a single iteration of each.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>it -n 1 -r 1
+<span class="n">pline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Model Summary
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+dense_1 (Dense)              (None, 64)                2112
+_________________________________________________________________
+dense_2 (Dense)              (None, 16)                1040
+_________________________________________________________________
+dense_3 (Dense)              (None, 1)                 17
+=================================================================
+Total params: 3,169
+Trainable params: 3,169
+Non-trainable params: 0
+_________________________________________________________________
+
+Epoch 1/1
+32000/32000 [==============================] - 5s 169us/step - loss: 0.6436 - acc: 0.6197
+Epoch 1/1
+32000/32000 [==============================] - 5s 142us/step - loss: 0.5764 - acc: 0.6952
+Epoch 1/1
+32000/32000 [==============================] - 5s 144us/step - loss: 0.5332 - acc: 0.7270
+Epoch 1/1
+32000/32000 [==============================] - 5s 145us/step - loss: 0.5192 - acc: 0.7393
+Epoch 1/1
+32000/32000 [==============================] - 5s 143us/step - loss: 0.5140 - acc: 0.7431
+Epoch 1/1
+32000/32000 [==============================] - 5s 144us/step - loss: 0.5138 - acc: 0.7402
+Epoch 1/1
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:11:18,448 - INFO - loader - End of stream
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+32000/32000 [==============================] - 5s 145us/step - loss: 0.5075 - acc: 0.7452
+Epoch 1/1
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:11:23,102 - INFO - loader - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+32000/32000 [==============================] - 5s 143us/step - loss: 0.5086 - acc: 0.7430
+Epoch 1/1
+32000/32000 [==============================] - 5s 144us/step - loss: 0.4971 - acc: 0.7523
+Epoch 1/1
+32000/32000 [==============================] - 5s 145us/step - loss: 0.5003 - acc: 0.7504
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:11:36,937 - INFO - trainer - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Saving model to keras_model.hdf5
+47.9 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)
+</pre></div></div>
+</div>
+<p>The simple pipeline takes 48s on my machine. We’ll use that as our baseline.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>it -n 1 -r 1
+<span class="n">pline2</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">pline2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Epoch 0: AUC = 0.7261
+Epoch 1: AUC = 0.7941
+Epoch 2: AUC = 0.8129
+Epoch 3: AUC = 0.8190
+Epoch 4: AUC = 0.8226
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:12:15,862 - INFO - loader - End of stream
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Epoch 5: AUC = 0.8255
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:12:20,015 - INFO - loader - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Epoch 6: AUC = 0.8285
+Epoch 7: AUC = 0.8282
+Epoch 8: AUC = 0.8278
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:12:32,371 - INFO - trianer - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Epoch 9: AUC = 0.8368
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:12:34,041 - INFO - evaluator - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_keras_training_30_8.png" src="../_images/examples_keras_training_30_8.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+45.5 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)
+</pre></div></div>
+</div>
+<p>Wow! The pipeline with test set evaluation roughly the same amount of time. This is because prediction and AUC calcualtion all happen durning training. As long as these other task take less time than training we shouldn’t expect any slowdown.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>it -n 1 -r 1
+<span class="n">psys</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">psys</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-16]Epoch 0: AUC = 0.6793
+[keras-32-16]Epoch 0: AUC = 0.6928
+[keras-64-32-16]Epoch 0: AUC = 0.7498
+[keras-128-64-32-16]Epoch 0: AUC = 0.7930
+[keras-16]Epoch 1: AUC = 0.7054
+[keras-32-16]Epoch 1: AUC = 0.7476
+[keras-64-32-16]Epoch 1: AUC = 0.8080
+[keras-16]Epoch 2: AUC = 0.7244
+[keras-128-64-32-16]Epoch 1: AUC = 0.8192
+[keras-32-16]Epoch 2: AUC = 0.7845
+[keras-64-32-16]Epoch 2: AUC = 0.8212
+[keras-16]Epoch 3: AUC = 0.7391
+[keras-128-64-32-16]Epoch 2: AUC = 0.8272
+[keras-32-16]Epoch 3: AUC = 0.8035
+[keras-16]Epoch 4: AUC = 0.7470
+[keras-64-32-16]Epoch 3: AUC = 0.8234
+[keras-32-16]Epoch 4: AUC = 0.8134
+[keras-128-64-32-16]Epoch 3: AUC = 0.8311
+[keras-16]Epoch 5: AUC = 0.7526
+[keras-64-32-16]Epoch 4: AUC = 0.8287
+[keras-32-16]Epoch 5: AUC = 0.8179
+[keras-16]Epoch 6: AUC = 0.7561
+[keras-128-64-32-16]Epoch 4: AUC = 0.8388
+[keras-64-32-16]Epoch 5: AUC = 0.8301
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:13:51,022 - INFO - Loader - End of stream
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-32-16]Epoch 6: AUC = 0.8203
+[keras-16]Epoch 7: AUC = 0.7563
+[keras-128-64-32-16]Epoch 5: AUC = 0.8475
+[keras-64-32-16]Epoch 6: AUC = 0.8338
+[keras-16]Epoch 8: AUC = 0.7567
+[keras-32-16]Epoch 7: AUC = 0.8186
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:13:56,442 - INFO - Train0 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 6: AUC = 0.8554
+[keras-16]Epoch 9: AUC = 0.7599
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:13:58,527 - INFO - Eval0 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-64-32-16]Epoch 7: AUC = 0.8341
+[keras-32-16]Epoch 8: AUC = 0.8204
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:14:00,351 - INFO - Train1 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 7: AUC = 0.8612
+[keras-32-16]Epoch 9: AUC = 0.8253
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:14:02,569 - INFO - Eval1 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-64-32-16]Epoch 8: AUC = 0.8360
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:14:04,427 - INFO - Train2 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 8: AUC = 0.8671
+[keras-64-32-16]Epoch 9: AUC = 0.8445
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:14:06,983 - INFO - Eval2 - Local termination
+2020-01-05 20:14:08,950 - INFO - Loader - Local termination
+2020-01-05 20:14:08,950 - INFO - Train3 - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[keras-128-64-32-16]Epoch 9: AUC = 0.8822
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2020-01-05 20:14:11,234 - INFO - Eval3 - Local termination
+2020-01-05 20:14:11,236 - INFO - Plot - Local termination
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_keras_training_32_16.png" src="../_images/examples_keras_training_32_16.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+49.1 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)
+</pre></div></div>
+</div>
+<p>Training four models only takes an additional few seconds! In fact this additional time can be contributed to the larger network architecture (keras-128-64-32-16). This model has more weights and thus takes longer to train. The pipeline is only has fast as it’s slowest component, so it has to wait untill all models finish training before it terminates. We can see from the logs that keras-128-64-32-16 (Train3/Eval3)is indeed that last to terminate.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../base.html" class="btn btn-neutral float-right" title="Base Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="stateful_functors.html" class="btn btn-neutral float-left" title="Stateful Functors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, James D. Pearce
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
