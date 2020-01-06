@@ -85,6 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/stateful_functors.html">Stateful Functors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/keras_training.html">Model Training Pipeline with Keras</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">Base Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipes Segment Classes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pipeline Classes</a></li>
@@ -182,7 +183,7 @@
 PipeSystem can be used in any topology.</p>
 <dl class="class">
 <dt id="pipelines.PipeLine">
-<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">PipeLine</code><span class="sig-paren">(</span><em class="sig-param">monitor=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeLine" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">PipeLine</code><span class="sig-paren">(</span><em class="sig-param">monitor=False</em>, <em class="sig-param">queue_type='multiprocessing.Queue'</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeLine" title="Permalink to this definition">¶</a></dt>
 <dd><p>A simplified API for linear PipeSytems.</p>
 <p>Toy example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define functors</span>
@@ -199,14 +200,14 @@ PipeSystem can be used in any topology.</p>
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">print_out</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">print</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Define pipeline</span>
 <span class="n">pline</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">()</span>
-<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source1&#39;</span><span class="p">,</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;generator&#39;</span><span class="p">))</span>
-<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="s1">&#39;batcher&#39;</span><span class="p">,</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;coroutine&#39;</span><span class="p">),</span> <span class="n">buffer_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">),</span> <span class="n">n_processes</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
-<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Pipe</span><span class="p">(</span><span class="n">print_out</span><span class="p">,</span> <span class="s1">&#39;print&#39;</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Source</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">))</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Regulator</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="s1">&#39;batcher&#39;</span><span class="p">),</span> <span class="n">buffer_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Transform</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">),</span> <span class="n">n_processes</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">pline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Sink</span><span class="p">(</span><span class="n">print_out</span><span class="p">,</span> <span class="s1">&#39;print&#39;</span><span class="p">))</span>
 
 <span class="c1"># Build pipeline</span>
 <span class="n">pline</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
@@ -216,6 +217,17 @@ PipeSystem can be used in any topology.</p>
 <span class="n">pline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>monitor</strong> – Bool, log stream I/O times</p>
+</dd>
+<dt class="field-even">Queue_type</dt>
+<dd class="field-even"><p>String, multiprocesses queue type to be used. Valid types: ‘multiprocessing.Queue’, ‘multiprocessing.SimpleQueue’</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="pipelines.PipeLine.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">pipe</em>, <em class="sig-param">n_processes=1</em>, <em class="sig-param">buffer_size=3</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeLine.add" title="Permalink to this definition">¶</a></dt>
@@ -255,13 +267,13 @@ PipeSystem can be used in any topology.</p>
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">output_gt_1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s1">&#39;1 &lt;&#39;</span><span class="p">,</span><span class="n">x</span>
+    <span class="nb">print</span> <span class="s1">&#39;1 &lt;&#39;</span><span class="p">,</span><span class="n">x</span>
 
 <span class="k">def</span> <span class="nf">output_lt_1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s1">&#39;1 &gt;&#39;</span><span class="p">,</span><span class="n">x</span>
+    <span class="nb">print</span> <span class="s1">&#39;1 &gt;&#39;</span><span class="p">,</span><span class="n">x</span>
 
 <span class="c1"># Define streams</span>
 <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s5</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">(),</span> <span class="n">Stream</span><span class="p">()</span>
@@ -269,15 +281,15 @@ PipeSystem can be used in any topology.</p>
 <span class="c1"># Create Pipe segments with up/downstreams</span>
 <span class="c1"># Order is not important</span>
 <span class="n">pipes</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source1&#39;</span><span class="p">,</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;generator&#39;</span><span class="p">),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source2&#39;</span><span class="p">,</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;generator&#39;</span><span class="p">),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="s1">&#39;batcher&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">func_type</span><span class="o">=</span><span class="s1">&#39;coroutine&#39;</span><span class="p">),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">split</span><span class="p">,</span> <span class="s1">&#39;split&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s4</span><span class="p">,</span> <span class="n">s5</span><span class="p">]),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">output_gt_1</span><span class="p">,</span> <span class="s1">&#39;print_gt_1&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s4</span><span class="p">]),</span>
-    <span class="n">Pipe</span><span class="p">(</span><span class="n">output_lt_1</span><span class="p">,</span> <span class="s1">&#39;print_lt_1&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s5</span><span class="p">]),</span>
+    <span class="n">Source</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source1&#39;</span><span class="p">,</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">]),</span>
+    <span class="n">Source</span><span class="p">(</span><span class="n">genRand</span><span class="p">,</span> <span class="s1">&#39;source2&#39;</span><span class="p">,</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">]),</span>
+    <span class="n">Regulator</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="s1">&#39;batcher&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">]),</span>
+    <span class="n">Transform</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
+    <span class="n">Transform</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
+    <span class="n">Transform</span><span class="p">(</span><span class="n">sumBatch</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s3</span><span class="p">]),</span>
+    <span class="n">Transform</span><span class="p">(</span><span class="n">split</span><span class="p">,</span> <span class="s1">&#39;split&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s2</span><span class="p">],</span> <span class="n">downstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s4</span><span class="p">,</span> <span class="n">s5</span><span class="p">]),</span>
+    <span class="n">Sink</span><span class="p">(</span><span class="n">output_gt_1</span><span class="p">,</span> <span class="s1">&#39;print_gt_1&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s4</span><span class="p">]),</span>
+    <span class="n">Sink</span><span class="p">(</span><span class="n">output_lt_1</span><span class="p">,</span> <span class="s1">&#39;print_lt_1&#39;</span><span class="p">,</span> <span class="n">upstreams</span><span class="o">=</span><span class="p">[</span><span class="n">s5</span><span class="p">]),</span>
 <span class="p">]</span>
 
 <span class="c1"># Build pipesystem</span>
@@ -289,10 +301,30 @@ PipeSystem can be used in any topology.</p>
 <span class="n">psys</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> – List[Pipes], List of Pipes with their upstreams/downstreams</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="pipelines.PipeSystem.build">
 <code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param">log_lvl='INFO'</em>, <em class="sig-param">monitor=False</em>, <em class="sig-param">ignore_exceptions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Connects pipe segments together and builds graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – String, log level, one of: info, debug, warning, error or critical</p></li>
+<li><p><strong>monitor</strong> – Bool, log stream I/O times</p></li>
+<li><p><strong>ignore_exceptions</strong> – List of exceptions to ignore while pipeline is running</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -305,6 +337,14 @@ PipeSystem can be used in any topology.</p>
 <dt id="pipelines.PipeSystem.diagram">
 <code class="sig-name descname">diagram</code><span class="sig-paren">(</span><em class="sig-param">draw_streams=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pipelines.PipeSystem.diagram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draws a graph diagram of pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Params draw_streams</dt>
+<dd class="field-odd"><p>Bool, if True Streams will be included in graph diagram</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>graphviz Digraph object</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">

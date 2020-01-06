@@ -85,6 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/stateful_functors.html">Stateful Functors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/keras_training.html">Model Training Pipeline with Keras</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">Base Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipes Segment Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipelines.html">Pipeline Classes</a></li>
@@ -193,7 +194,7 @@ API, which strikes a good balance between simplicity and flexibility.</p>
 <p>A MiniPipe pipeline is build up from pipe segments, which may be connected to form a graph. Pipe segments are connected by
 queues, for accepting upstream data (inputs) and for passing data downstream (outputs).</p>
 <p>Consider this simple example.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">minipipe</span> <span class="kn">as</span> <span class="nn">mp</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">minipipe</span> <span class="k">as</span> <span class="nn">mp</span>
 
 <span class="c1"># loader, transform and save are user defined python functions/generators</span>
 <span class="n">pline</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">PipeLine</span><span class="p">()</span>
@@ -274,6 +275,13 @@ and processes the data once, feeding the result to multiple GPUs for training as
 <li class="toctree-l1"><a class="reference internal" href="examples/stateful_functors.html">Stateful Functors</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="examples/stateful_functors.html#Simple-Moving-Average">Simple Moving Average</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/stateful_functors.html#Fibonacci-Sequence-with-Loops">Fibonacci Sequence with Loops</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/keras_training.html">Model Training Pipeline with Keras</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/keras_training.html#Simple-Pipeline">Simple Pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/keras_training.html#Evaluation-while-Training">Evaluation while Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/keras_training.html#Training-with-Multiple-Models-(Single-GPU).">Training with Multiple Models (Single GPU).</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/keras_training.html#Time-Comparisons">Time Comparisons</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">Base Classes</a></li>

@@ -37,7 +37,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Pipes Segment Classes" href="pipes.html" />
-    <link rel="prev" title="Stateful Functors" href="examples/stateful_functors.html" /> 
+    <link rel="prev" title="Model Training Pipeline with Keras" href="examples/keras_training.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -86,6 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/toy_example.html">Introduction to PipeLine</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/into_pipesys.html">Introduction to PipeSystems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/stateful_functors.html">Stateful Functors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/keras_training.html">Model Training Pipeline with Keras</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Base Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipes Segment Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipelines.html">Pipeline Classes</a></li>
@@ -201,7 +202,7 @@ By default logger is set to INFO.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>msg</strong> – message to log</p></li>
-<li><p><strong>name</strong> – name of object invoking logs</p></li>
+<li><p><strong>name</strong> – name of logger</p></li>
 <li><p><strong>lvl</strong> – log level, one of: info, debug, warning, error or critical</p></li>
 </ul>
 </dd>
@@ -248,8 +249,25 @@ passed to a Pipe it will shut itself down.</p>
 
 <dl class="class">
 <dt id="base.Stream">
-<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">Stream</code><span class="sig-paren">(</span><em class="sig-param">name='stream'</em>, <em class="sig-param">buffer_size=3</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">monitor=False</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Stream" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">base.</code><code class="sig-name descname">Stream</code><span class="sig-paren">(</span><em class="sig-param">name='stream'</em>, <em class="sig-param">buffer_size=3</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">monitor=False</em>, <em class="sig-param">queue_type='multiprocessing.Queue'</em><span class="sig-paren">)</span><a class="headerlink" href="#base.Stream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Based off of a multiprocessing queue, Stream handles moving data between Pipe segments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – String, name of Stream</p></li>
+<li><p><strong>buffer_size</strong> – Int, max size of queue. Will be ignored if queue_type = “multiprocessing.SimpleQueue”</p></li>
+<li><p><strong>timeout</strong> – Int, timeout(s) value for Queue.put and Queue.get methods</p></li>
+<li><p><strong>monitor</strong> – Bool, log stream I/O times</p></li>
+</ul>
+</dd>
+<dt class="field-even">Queue_type</dt>
+<dd class="field-even"><p>String, multiprocesses queue type to be used.
+Valid types: ‘multiprocessing.Queue’, ‘multiprocessing.SimpleQueue’</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -265,7 +283,7 @@ passed to a Pipe it will shut itself down.</p>
         <a href="pipes.html" class="btn btn-neutral float-right" title="Pipes Segment Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="examples/stateful_functors.html" class="btn btn-neutral float-left" title="Stateful Functors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="examples/keras_training.html" class="btn btn-neutral float-left" title="Model Training Pipeline with Keras" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

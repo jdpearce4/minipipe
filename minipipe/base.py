@@ -87,6 +87,7 @@ class Stream(object):
     """
 
     def __init__(self, name = 'stream', buffer_size=3, timeout=None, monitor=False, queue_type='multiprocessing.Queue'):
+
         assert (queue_type.lower() in ('multiprocessing.queue', 'multiprocessing.simplequeue')), "Error: invalid queue type"
 
         if queue_type.lower() == 'multiprocessing.simplequeue':
@@ -94,6 +95,7 @@ class Stream(object):
         else:
             self.q = Queue(buffer_size)
 
+        self.queue_type = queue_type.lower()
         self.timeout = timeout
         self.buffer_size = buffer_size
         self.name = name
@@ -144,8 +146,10 @@ class Stream(object):
         x = None
         while (any([p._continue() for p in self.pipes_out]) or not self.q.empty()):
             try:
-                x = self.q.get(timeout=timeout or self.timeout)
-                #x = self.q.get()
+                if self.queue_type == 'multiprocessing.simplequeue':
+                    x = self.q.get() #SimpleQueue does not have timeout arg
+                else:
+                    x = self.q.get(timeout=timeout or self.timeout)
                 if self.monitor:
                     self.logger.log('capacity:{:0.2f}%'.format(self.capacity()), self.name+':get')
                 break
@@ -163,8 +167,11 @@ class Stream(object):
             try:
                 if x is None:
                     break
-                self.q.put(x, timeout=timeout or self.timeout)
-                #self.q.put(x)
+                if self.queue_type == 'multiprocessing.simplequeue':
+                    self.q.put(x) #SimpleQueue does not have timeout arg
+                else:
+                    self.q.put(x, timeout=timeout or self.timeout)
+
                 if self.monitor:
                     self.logger.log('capacity:{:0.2f}%'.format(self.capacity()), self.name+':put')
                 break
@@ -209,6 +216,12 @@ class Pipe(object):
         self.upstreams = upstreams or []
         self.downstreams = downstreams or []
         self.ignore_exceptions = ignore_exceptions or []
+
+        # Check inputs
+        for upstream in self.upstreams:
+            assert (isinstance(upstream, Stream)), "Error: upstreams must be of minipipe.Stream type"
+        for downstream in self.downstreams:
+            assert (isinstance(downstream, Stream)), "Error: downtreams must be of minipipe.Stream type"
 
         # Private methods
         self._n_desc = 0

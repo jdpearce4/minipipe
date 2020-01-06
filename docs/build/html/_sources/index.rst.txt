@@ -35,7 +35,6 @@ Consider this simple example.
     # Start pipeline
     pline.run()
     pline.close()
-
 Where `loader`, `transform` and `save` are all user defined functions. If you've used the Keras Sequential API this will
 look familiar to you. MiniPipe has three basic types of pipe segments: Sources, Transforms and Sinks. Each has one
 requires an argument called functor. For Sources functors must always be an uninitialized generator, while for Sinks
@@ -74,7 +73,6 @@ with with only one change to our code
     # Start pipeline
     pline.run()
     pline.close()
-
 A process pool is created for `transform` relieving the bottleneck.
 
 Horizonal Parallelism
@@ -107,7 +105,6 @@ Installation is super easy with pip::
 
     pip install minipipe
 
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -115,6 +112,7 @@ Installation is super easy with pip::
    examples/toy_example.ipynb
    examples/into_pipesys.ipynb
    examples/stateful_functors.ipynb
+   examples/keras_training.ipynb
    base
    pipes
    pipelines

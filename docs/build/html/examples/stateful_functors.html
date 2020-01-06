@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Base Classes" href="../base.html" />
+    <link rel="next" title="Model Training Pipeline with Keras" href="keras_training.html" />
     <link rel="prev" title="Introduction to PipeSystems" href="into_pipesys.html" /> 
 </head>
 
@@ -90,6 +90,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#Fibonacci-Sequence-with-Loops">Fibonacci Sequence with Loops</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="keras_training.html">Model Training Pipeline with Keras</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../base.html">Base Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pipes.html">Pipes Segment Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pipelines.html">Pipeline Classes</a></li>
@@ -398,7 +399,7 @@ div.rendered_html tbody tr:hover {
 
 <span class="k">class</span> <span class="nc">generate_rand_walk</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span> <span class="o">=</span> <span class="mi">100</span>
 
     <span class="k">def</span> <span class="nf">local_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -412,7 +413,7 @@ div.rendered_html tbody tr:hover {
 
 <span class="k">class</span> <span class="nc">simple_moving_average</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">=</span> <span class="n">window_size</span>
 
     <span class="k">def</span> <span class="nf">local_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -510,7 +511,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="k">import</span> <span class="n">Event</span>
+<span></span><span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Event</span>
 
 <span class="c1"># minipipe uses multiprocessing Events for termination flags</span>
 <span class="n">term_flag</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
@@ -602,7 +603,7 @@ div.rendered_html tbody tr:hover {
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../base.html" class="btn btn-neutral float-right" title="Base Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="keras_training.html" class="btn btn-neutral float-right" title="Model Training Pipeline with Keras" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="into_pipesys.html" class="btn btn-neutral float-left" title="Introduction to PipeSystems" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
