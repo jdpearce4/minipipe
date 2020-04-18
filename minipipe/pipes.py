@@ -1,6 +1,8 @@
 """ Derived Pipe classes """
 
 from minipipe.base import Pipe, Sentinel
+import functools
+from copy import copy
 
 class Source(Pipe):
     """
@@ -14,12 +16,25 @@ class Source(Pipe):
         :param ignore_exceptions: List of exceptions to ignore while pipeline is running
     """
 
-    def __init__(self, functor_obj, name='Source', downstreams=None, ignore_exceptions=None):
+    def __init__(self, functor):
+        functools.update_wrapper(self, functor)
+        super(Source, self).__init__(functor)
 
-        # Source has no upstreams
-        super(Source, self).__init__(functor_obj, name, None, downstreams, ignore_exceptions)
+    def __call__(self, *args, **kwargs):
+        self.args, self.kwargs = args, kwargs
+        self.generator = self.functor(*args, **kwargs)
+        return copy(self)
 
-    def run_functor(self):
+    def __iter__(self):
+        return self.generator
+
+    def __next__(self):
+        return next(self.generator)
+
+    def _reset_functor(self):
+        self.generator = self.functor(*self.args, **self.kwargs)
+
+    def _run_loop(self):
 
         # Generator functors are used for sources
         # Will terminate once end of generator is reached
@@ -29,19 +44,14 @@ class Source(Pipe):
             try:
 
                 # Get next item from generator
-                try:
-                    x = next(self.functor)
-                except TypeError:
-                    # If generator is not initialized
-                    self.functor = self.functor()
-                    x = next(self.functor)
+                x = next(self.generator)
 
                 # Check for Sentinel signaling termination
                 if x is Sentinel:
                     self._terminate_local()
                     break
 
-                # Do nothing on python None
+                # Do nothing on None
                 if x is None:
                     continue
 
@@ -49,16 +59,16 @@ class Source(Pipe):
 
             # Terminate once end of generator is reached
             except StopIteration:
-                self._logger.log('End of stream', self.name)
+                self.logger.log('End of stream', self.name)
                 self._terminate_local()
 
             # These exceptions are ignored raising WARNING only
             except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
-                    self._logger.log(str(e), self.name, 'warning')
+                    self.logger.log(str(e), self.name, 'warning')
                     continue
                 else:
-                    self._logger.log(str(e), self.name, 'error')
+                    self.logger.log(str(e), self.name, 'error')
                     self._terminate_global()
                     raise e
 
@@ -78,14 +88,32 @@ class Sink(Pipe):
 
         """
 
-    def __init__(self, functor_obj, name='Sink', upstreams=None,
-                 ignore_exceptions=None, init_kwargs=None):
+    def __init__(self, functor):
+        functools.update_wrapper(self, functor)
+        self._functor_is_function = type(functor) == type(lambda _: _)
+        if self._functor_is_function:
+            self.function = functor
+        super(Sink, self).__init__(functor)
 
-        # Sink has no downstreams
-        super(Sink, self).__init__(functor_obj, name, upstreams, None,
-                                   ignore_exceptions, init_kwargs)
+    def __call__(self, *args, **kwargs):
+        self.args, self.kwargs = args, kwargs
+        if self._functor_is_function:
+            return self.function(*args, **kwargs)
+        else:
+            self.functor_inst = self.functor(*args, **kwargs)
+            for name, mthd in vars(self.functor).items():
+                if name[:2] + name[-2:] != '_' * 4:  # checks for public methods
+                    vars(self).update({name: functools.partial(mthd, self.functor_inst)})
+                if name == 'local_call' or hasattr(mthd, 'local_call'):
+                    self.function = functools.partial(mthd, self.functor_inst)
 
-    def run_functor(self):
+            return copy(self)
+
+    def _reset_functor(self):
+        if not self._functor_is_function:
+            self.__call__(*self.args, **self.kwargs)
+
+    def _run_loop(self):
 
         x = None
         while self._continue():
@@ -104,16 +132,16 @@ class Sink(Pipe):
                 if self._contains_none(x):
                     continue
 
-                x = self.functor(*x)
-                self._out(x)
+                # Run functor or local_call function
+                self.function(*x)
 
             # These exceptions are ignored raising WARNING only
             except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
-                    self._logger.log(str(e), self.name, 'warning')
+                    self.logger.log(str(e), self.name, 'warning')
                     continue
                 else:
-                    self._logger.log(str(e), self.name, 'error')
+                    self.logger.log(str(e), self.name, 'error')
                     self._terminate_global()
                     raise e
 
@@ -133,13 +161,32 @@ class Transform(Pipe):
             :param ignore_exceptions: List of exceptions to ignore while pipeline is running
         """
 
-    def __init__(self, functor_obj, name='Transform', upstreams=None, downstreams=None,
-                 ignore_exceptions=None, init_kwargs=None):
+    def __init__(self, functor):
+        functools.update_wrapper(self, functor)
+        self._functor_is_function = type(functor) == type(lambda _: _)
+        if self._functor_is_function:
+            self.function = functor
+        super(Transform, self).__init__(functor)
 
-        super(Transform, self).__init__(functor_obj, name, upstreams, downstreams,
-                                        ignore_exceptions, init_kwargs)
+    def __call__(self, *args, **kwargs):
+        self.args, self.kwargs = args, kwargs
+        if self._functor_is_function:
+            return self.function(*args, **kwargs)
+        else:
+            self.functor_inst = self.functor(*args, **kwargs)
+            for name, mthd in vars(self.functor).items():
+                if name[:2] + name[-2:] != '_'*4: #checks for public methods
+                    vars(self).update({name:functools.partial(mthd, self.functor_inst)})
+                if name == 'local_call' or hasattr(mthd, 'local_call'):
+                    self.function = functools.partial(mthd, self.functor_inst)
 
-    def run_functor(self):
+            return copy(self)
+
+    def _reset_functor(self):
+        if not self._functor_is_function:
+            self.__call__(*self.args, **self.kwargs)
+
+    def _run_loop(self):
 
         x = None
         while self._continue():
@@ -157,17 +204,17 @@ class Transform(Pipe):
                 # Do nothing on python None
                 if self._contains_none(x):
                     continue
-
-                x = self.functor(*x)
+                # Run functor or local_call function
+                x = self.function(*x)
                 self._out(x)
 
             # These exceptions are ignored raising WARNING only
             except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
-                    self._logger.log(str(e), self.name, 'warning')
+                    self.logger.log(str(e), self.name, 'warning')
                     continue
                 else:
-                    self._logger.log(str(e), self.name, 'error')
+                    self.logger.log(str(e), self.name, 'error')
                     self._terminate_global()
                     raise e
 
@@ -186,21 +233,35 @@ class Regulator(Pipe):
             :param ignore_exceptions: List of exceptions to ignore while pipeline is running
         """
 
-    def __init__(self, functor_obj, name='Regulator', upstreams=None, downstreams=None,
-                 ignore_exceptions=None, init_kwargs=None):
+    def __init__(self, functor):
+        functools.update_wrapper(self, functor)
+        super(Regulator, self).__init__(functor)
 
-        super(Regulator, self).__init__(functor_obj, name, upstreams, downstreams,
-                                        ignore_exceptions, init_kwargs)
+    def __call__(self, *args, **kwargs):
+        self.args, self.kwargs = args, kwargs
+        self.coroutine = self.functor(*args, **kwargs)
+        next(self.coroutine)
+        return copy(self)
 
-    def run_functor(self):
+    def __iter__(self):
+        return self.coroutine
+
+    def __next__(self):
+        return next(self.coroutine)
+
+    def _reset_functor(self):
+        self.coroutine = self.functor(*self.args, **self.kwargs)
+        next(self.coroutine)
+
+    def _run_loop(self):
 
         # Coroutine functors act as a transformation and source
         # Useful when the data needs to be broken up or accumulated
         # On StopIteration coroutine is reset
 
-        coroutine = self.functor(**self.init_kwargs)
-        next(coroutine)
         x = None
+        #self.__call__()
+
         while self._continue():
             try:
 
@@ -218,25 +279,24 @@ class Regulator(Pipe):
                     continue
 
                 # Send data to coroutine
-                x_i = coroutine.send(*x)
+                x_i = self.coroutine.send(*x)
 
                 # Iterate over coroutine output
                 while x_i is not None:
                     self._out(x_i)
                     try:
-                        x_i = next(coroutine)
+                        x_i = next(self.coroutine)
                     except StopIteration:
                         # Reset coroutine for next data
-                        coroutine = self.functor(**self.init_kwargs)
-                        next(coroutine)
+                        self._reset_functor()
                         break
 
             # These exceptions are ignored raising WARNING only
             except BaseException as e:
                 if e.__class__ in self.ignore_exceptions:
-                    self._logger.log(str(e), self.name, 'warning')
+                    self.logger.log(str(e), self.name, 'warning')
                     continue
                 else:
-                    self._logger.log(str(e), self.name, 'error')
+                    self.logger.log(str(e), self.name, 'error')
                     self._terminate_global()
                     raise e

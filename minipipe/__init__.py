@@ -4,8 +4,7 @@ from .base import Sentinel
 from .base import Logger
 from .base import Stream
 from .base import Pipe
-from .pipelines import PipeSystem
-from .pipelines import PipeLine
+from .pipelines import Pipeline
 from .pipes import Source
 from .pipes import Sink
 from .pipes import Transform
